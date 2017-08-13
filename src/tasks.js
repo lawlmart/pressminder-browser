@@ -48,6 +48,7 @@ export async function scanPage(data) {
               for (const prop of result.result.preview.properties) {
                 properties[prop.name] = parseInt(prop.value)
               }
+              properties.height = properties.bottom - properties.top
 
               result = await Runtime.evaluate({
                 expression: articleExpression + ".getElementsByTagName('a')[0].getAttribute('href')",
@@ -85,7 +86,7 @@ export async function scanPage(data) {
                 expression: "getComputedStyle(" + headerExpression + ").fontSize",
                 generatePreview: true
               })
-              properties.fontSize = parseInt((result.result.value || "").replace("px", ""))
+              properties.fontSize = parseInt((result.result.value || "").replace("px", "").replace("em", "").replace("rem", ""))
 
               articles.push(properties)
             }

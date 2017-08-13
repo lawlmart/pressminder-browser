@@ -66,6 +66,8 @@ let scanPage = exports.scanPage = (() => {
                   }
                 }
 
+                properties.height = properties.bottom - properties.top;
+
                 result = yield Runtime.evaluate({
                   expression: articleExpression + ".getElementsByTagName('a')[0].getAttribute('href')",
                   generatePreview: true
@@ -101,7 +103,7 @@ let scanPage = exports.scanPage = (() => {
                   expression: "getComputedStyle(" + headerExpression + ").fontSize",
                   generatePreview: true
                 });
-                properties.fontSize = parseInt((result.result.value || "").replace("px", ""));
+                properties.fontSize = parseInt((result.result.value || "").replace("px", "").replace("em", "").replace("rem", ""));
 
                 articles.push(properties);
               }
