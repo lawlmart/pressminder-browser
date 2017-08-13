@@ -48,6 +48,10 @@ export async function scanPage(data) {
               for (const prop of result.result.preview.properties) {
                 properties[prop.name] = parseInt(prop.value)
               }
+              if (!properties.top) {
+                // it's not visible
+                continue
+              }
               properties.height = properties.bottom - properties.top
 
               result = await Runtime.evaluate({
@@ -87,19 +91,22 @@ export async function scanPage(data) {
                 generatePreview: true
               })
               properties.fontSize = parseInt((result.result.value || "").replace("px", "").replace("em", "").replace("rem", ""))
-
+              properties.index = i
               articles.push(properties)
-            }
-            
-            console.log(articles)
+            }   
             client.close();
-
             await trigger('scan_complete', {
               url,
               placements: articles
             })
 
-            resolve(articles)
+            for (let a of articles.sort(function(a, b) {
+              return a.top - b.top
+            })) {
+              console.log(a.title + " (" + a.index + "): " + a.top + ", font: " + a.fontSize)
+            }
+
+            resolve()
             
           } catch (err) {
             reject(err)

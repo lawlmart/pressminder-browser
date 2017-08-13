@@ -66,6 +66,10 @@ let scanPage = exports.scanPage = (() => {
                   }
                 }
 
+                if (!properties.top) {
+                  // it's not visible
+                  continue;
+                }
                 properties.height = properties.bottom - properties.top;
 
                 result = yield Runtime.evaluate({
@@ -104,19 +108,43 @@ let scanPage = exports.scanPage = (() => {
                   generatePreview: true
                 });
                 properties.fontSize = parseInt((result.result.value || "").replace("px", "").replace("em", "").replace("rem", ""));
-
+                properties.index = i;
                 articles.push(properties);
               }
-
-              console.log(articles);
               client.close();
-
               yield (0, _events.trigger)('scan_complete', {
                 url,
                 placements: articles
               });
 
-              resolve(articles);
+              var _iteratorNormalCompletion2 = true;
+              var _didIteratorError2 = false;
+              var _iteratorError2 = undefined;
+
+              try {
+                for (var _iterator2 = articles.sort(function (a, b) {
+                  return a.top - b.top;
+                })[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                  let a = _step2.value;
+
+                  console.log(a.title + " (" + a.index + "): " + a.top + ", font: " + a.fontSize);
+                }
+              } catch (err) {
+                _didIteratorError2 = true;
+                _iteratorError2 = err;
+              } finally {
+                try {
+                  if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                    _iterator2.return();
+                  }
+                } finally {
+                  if (_didIteratorError2) {
+                    throw _iteratorError2;
+                  }
+                }
+              }
+
+              resolve();
             } catch (err) {
               reject(err);
             }
