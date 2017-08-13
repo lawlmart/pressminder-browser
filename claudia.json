@@ -1,0 +1,7 @@
+{
+  "lambda": {
+    "role": "PressMinderBrowser-executor",
+    "name": "PressMinderBrowser",
+    "region": "us-east-1"
+  }
+}
