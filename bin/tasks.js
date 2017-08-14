@@ -41,8 +41,8 @@ let scanPage = exports.scanPage = (() => {
           yield Emulation.setDeviceMetricsOverride(deviceMetrics);
           yield Emulation.setVisibleSize({ width: deviceMetrics.width, height: deviceMetrics.height });
 
-          yield Page.loadEventFired();
-          //await Page.domContentEventFired()
+          //await Page.loadEventFired()
+          yield Page.domContentEventFired();
           setTimeout(_asyncToGenerator(function* () {
             try {
               const articlesExpression = "document.querySelectorAll('" + data.articleSelector + "')";
@@ -52,7 +52,10 @@ let scanPage = exports.scanPage = (() => {
                 generatePreview: true
               });
               for (let i = 0; i < result.result.preview.properties.length; i++) {
+
                 const articleExpression = articlesExpression + "[" + i.toString() + "]";
+                const sectionExpression = articleExpression + ".closest('" + data.sectionSelector + "')";
+
                 const properties = {};
                 let result = yield Runtime.evaluate({
                   expression: articleExpression + ".getBoundingClientRect()",
@@ -104,6 +107,18 @@ let scanPage = exports.scanPage = (() => {
                 properties.url = articleUrl;
 
                 result = yield Runtime.evaluate({
+                  expression: sectionExpression,
+                  generatePreview: true
+                });
+                properties.sectionEl = result.result.value;
+
+                result = yield Runtime.evaluate({
+                  expression: sectionExpression + ".getAttribute('id')",
+                  generatePreview: true
+                });
+                properties.section = result.result.value;
+
+                result = yield Runtime.evaluate({
                   expression: articleExpression + ".innerHTML",
                   generatePreview: true
                 });
@@ -140,7 +155,7 @@ let scanPage = exports.scanPage = (() => {
               yield (0, _events.trigger)('scan_complete', {
                 url,
                 placements: articles,
-                screenshot: screenshotData
+                screenshot: null
               });
 
               var _iteratorNormalCompletion2 = true;
@@ -153,7 +168,12 @@ let scanPage = exports.scanPage = (() => {
                 })[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
                   let a = _step2.value;
 
-                  console.log(a.title + " (" + a.index + "): " + a.top + ", font: " + a.fontSize);
+                  console.log(JSON.stringify({
+                    title: a.title,
+                    top: a.top,
+                    fontSize: a.fontSize,
+                    section: a.section
+                  }));
                 }
               } catch (err) {
                 _didIteratorError2 = true;

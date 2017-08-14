@@ -52,7 +52,10 @@ export async function scanPage(data) {
             generatePreview: true
           })
           for (let i = 0; i < result.result.preview.properties.length; i++) {
+        
             const articleExpression = articlesExpression + "[" + i.toString() + "]"
+            const sectionExpression = articleExpression + ".closest('" + data.sectionSelector +  "')"
+
             const properties = {}
             let result = await Runtime.evaluate({
               expression: articleExpression + ".getBoundingClientRect()",
@@ -81,6 +84,17 @@ export async function scanPage(data) {
             articleUrl = articleUrl.split('#')[0]
             properties.url = articleUrl
 
+            result = await Runtime.evaluate({
+              expression: sectionExpression,
+              generatePreview: true
+            })
+            properties.sectionEl = result.result.value
+
+            result = await Runtime.evaluate({
+              expression: sectionExpression + ".getAttribute('id')",
+              generatePreview: true
+            })
+            properties.section = result.result.value
             
             result = await Runtime.evaluate({
               expression: articleExpression + ".innerHTML",
@@ -119,13 +133,18 @@ export async function scanPage(data) {
           await trigger('scan_complete', {
             url,
             placements: articles,
-            screenshot: screenshotData
+            screenshot: null
           })
 
           for (let a of articles.sort(function(a, b) {
             return a.top - b.top
           })) {
-            console.log(a.title + " (" + a.index + "): " + a.top + ", font: " + a.fontSize)
+            console.log(JSON.stringify({
+              title: a.title,
+              top: a.top,
+              fontSize: a.fontSize,
+              section: a.section
+            }))
           }
 
           resolve()
