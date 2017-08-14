@@ -52,9 +52,7 @@ export async function scanPage(data) {
             generatePreview: true
           })
           for (let i = 0; i < result.result.preview.properties.length; i++) {
-        
             const articleExpression = articlesExpression + "[" + i.toString() + "]"
-            const sectionExpression = articleExpression + ".closest('" + data.sectionSelector +  "')"
 
             const properties = {}
             let result = await Runtime.evaluate({
@@ -84,17 +82,20 @@ export async function scanPage(data) {
             articleUrl = articleUrl.split('#')[0]
             properties.url = articleUrl
 
-            result = await Runtime.evaluate({
-              expression: sectionExpression,
-              generatePreview: true
-            })
-            properties.sectionEl = result.result.value
-
-            result = await Runtime.evaluate({
-              expression: sectionExpression + ".getAttribute('id')",
-              generatePreview: true
-            })
-            properties.section = result.result.value
+            if (data.sectionSelector) {
+              const sectionExpression = articleExpression + ".closest('" + data.sectionSelector +  "')"
+              result = await Runtime.evaluate({
+                expression: sectionExpression,
+                generatePreview: true
+              })
+              properties.sectionEl = result.result.value
+  
+              result = await Runtime.evaluate({
+                expression: sectionExpression + ".getAttribute('" + data.sectionNameAttribute + "')",
+                generatePreview: true
+              })
+              properties.section = result.result.value
+            }
             
             result = await Runtime.evaluate({
               expression: articleExpression + ".innerHTML",
@@ -121,6 +122,7 @@ export async function scanPage(data) {
             properties.index = i
             articles.push(properties)
           } 
+          /*
           let screenshotData = null
           try {
             result = await Page.captureScreenshot();
@@ -128,6 +130,7 @@ export async function scanPage(data) {
           } catch (err) {
             console.log("Unable to get screenshot: " + err.toString())
           }
+          */
 
           client.close();
           await trigger('scan_complete', {

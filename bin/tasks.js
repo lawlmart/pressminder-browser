@@ -52,9 +52,7 @@ let scanPage = exports.scanPage = (() => {
                 generatePreview: true
               });
               for (let i = 0; i < result.result.preview.properties.length; i++) {
-
                 const articleExpression = articlesExpression + "[" + i.toString() + "]";
-                const sectionExpression = articleExpression + ".closest('" + data.sectionSelector + "')";
 
                 const properties = {};
                 let result = yield Runtime.evaluate({
@@ -106,17 +104,20 @@ let scanPage = exports.scanPage = (() => {
                 articleUrl = articleUrl.split('#')[0];
                 properties.url = articleUrl;
 
-                result = yield Runtime.evaluate({
-                  expression: sectionExpression,
-                  generatePreview: true
-                });
-                properties.sectionEl = result.result.value;
+                if (data.sectionSelector) {
+                  const sectionExpression = articleExpression + ".closest('" + data.sectionSelector + "')";
+                  result = yield Runtime.evaluate({
+                    expression: sectionExpression,
+                    generatePreview: true
+                  });
+                  properties.sectionEl = result.result.value;
 
-                result = yield Runtime.evaluate({
-                  expression: sectionExpression + ".getAttribute('id')",
-                  generatePreview: true
-                });
-                properties.section = result.result.value;
+                  result = yield Runtime.evaluate({
+                    expression: sectionExpression + ".getAttribute('" + data.sectionNameAttribute + "')",
+                    generatePreview: true
+                  });
+                  properties.section = result.result.value;
+                }
 
                 result = yield Runtime.evaluate({
                   expression: articleExpression + ".innerHTML",
@@ -143,13 +144,15 @@ let scanPage = exports.scanPage = (() => {
                 properties.index = i;
                 articles.push(properties);
               }
-              let screenshotData = null;
+              /*
+              let screenshotData = null
               try {
-                result = yield Page.captureScreenshot();
-                screenshotData = result.data;
+                result = await Page.captureScreenshot();
+                screenshotData = result.data
               } catch (err) {
-                console.log("Unable to get screenshot: " + err.toString());
+                console.log("Unable to get screenshot: " + err.toString())
               }
+              */
 
               client.close();
               yield (0, _events.trigger)('scan_complete', {
