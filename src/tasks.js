@@ -14,19 +14,30 @@ function removeTags(txt) {
 
 export async function scanPage(data) {
   const chrome = await launchChrome({
-    flags: ['--window-size=1280x1696', '--hide-scrollbars', '--disable-gpu']
+    flags: ['--hide-scrollbars', '--disable-gpu']
   })
   const url = data.url
   return new Promise((resolve, reject) => {
-    CDP((client) => {
+    CDP(async function(client) {
       CDP.Version()
       .then(version => {
         console.log(version)
       })
 
       // extract domains
-      const {Network, Page, Runtime, DOM} = client;
+      const {Network, Page, Runtime, DOM, Emulation} = client;
       // setup handlers
+
+      // Set up viewport resolution, etc.
+      const deviceMetrics = {
+        width: 1280,
+        height: 720,
+        deviceScaleFactor: 0,
+        mobile: false,
+        fitWindow: false,
+      };
+      await Emulation.setDeviceMetricsOverride(deviceMetrics);
+      await Emulation.setVisibleSize({width: deviceMetrics.width, height: deviceMetrics.height});
       
       Page.domContentEventFired(function() {
         setTimeout(async function() {
@@ -99,7 +110,7 @@ export async function scanPage(data) {
               result = await Page.captureScreenshot();
               screenshotData = result.data
             } catch (err) {
-              console.log("Unable to get screenshot")
+              console.log("Unable to get screenshot: " + err.toString())
             }
 
             client.close();
