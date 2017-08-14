@@ -8,7 +8,7 @@ exports.scanPage = undefined;
 let scanPage = exports.scanPage = (() => {
   var _ref = _asyncToGenerator(function* (data) {
     const chrome = yield launchChrome({
-      flags: ['--window-size=1280x1696', '--hide-scrollbars']
+      flags: ['--window-size=1280x1696', '--hide-scrollbars', '--disable-gpu']
     });
     const url = data.url;
     return new Promise(function (resolve, reject) {
@@ -33,7 +33,6 @@ let scanPage = exports.scanPage = (() => {
                 expression: articlesExpression,
                 generatePreview: true
               });
-
               for (let i = 0; i < result.result.preview.properties.length; i++) {
                 const articleExpression = articlesExpression + "[" + i.toString() + "]";
                 const properties = {};
@@ -111,10 +110,20 @@ let scanPage = exports.scanPage = (() => {
                 properties.index = i;
                 articles.push(properties);
               }
+
+              let screenshotData = null;
+              try {
+                result = yield Page.captureScreenshot();
+                screenshotData = result.data;
+              } catch (err) {
+                console.log("Unable to get screenshot");
+              }
+
               client.close();
               yield (0, _events.trigger)('scan_complete', {
                 url,
-                placements: articles
+                placements: articles,
+                screenshot: screenshotData
               });
 
               var _iteratorNormalCompletion2 = true;

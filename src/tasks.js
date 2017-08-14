@@ -14,7 +14,7 @@ function removeTags(txt) {
 
 export async function scanPage(data) {
   const chrome = await launchChrome({
-    flags: ['--window-size=1280x1696', '--hide-scrollbars']
+    flags: ['--window-size=1280x1696', '--hide-scrollbars', '--disable-gpu']
   })
   const url = data.url
   return new Promise((resolve, reject) => {
@@ -37,7 +37,6 @@ export async function scanPage(data) {
               expression: articlesExpression,
               generatePreview: true
             })
-
             for (let i = 0; i < result.result.preview.properties.length; i++) {
               const articleExpression = articlesExpression + "[" + i.toString() + "]"
               const properties = {}
@@ -94,10 +93,20 @@ export async function scanPage(data) {
               properties.index = i
               articles.push(properties)
             }   
+
+            let screenshotData = null
+            try {
+              result = await Page.captureScreenshot();
+              screenshotData = result.data
+            } catch (err) {
+              console.log("Unable to get screenshot")
+            }
+
             client.close();
             await trigger('scan_complete', {
               url,
-              placements: articles
+              placements: articles,
+              screenshot: screenshotData
             })
 
             for (let a of articles.sort(function(a, b) {
