@@ -14,7 +14,7 @@ function removeTags(txt) {
 
 export async function scanPage(data) {
   const chrome = await launchChrome({
-    flags: ['--hide-scrollbars', '--disable-gpu']
+    flags: ['--hide-scrollbars', '--disable-gpu', '--incognito']
   })
   const url = data.url
   return new Promise((resolve, reject) => {

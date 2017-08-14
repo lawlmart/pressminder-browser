@@ -8,7 +8,7 @@ exports.scanPage = undefined;
 let scanPage = exports.scanPage = (() => {
   var _ref = _asyncToGenerator(function* (data) {
     const chrome = yield launchChrome({
-      flags: ['--hide-scrollbars', '--disable-gpu']
+      flags: ['--hide-scrollbars', '--disable-gpu', '--incognito']
     });
     const url = data.url;
     return new Promise(function (resolve, reject) {
