@@ -134,7 +134,7 @@ let scanPage = exports.scanPage = (() => {
                   generatePreview: true
                 });
                 properties.headingEl = result.result.value;
-                properties.title = removeTags(result.result.value);
+                properties.title = h2p(result.result.value);
 
                 result = yield Runtime.evaluate({
                   expression: "getComputedStyle(" + headerExpression + ").fontSize",
@@ -172,6 +172,7 @@ let scanPage = exports.scanPage = (() => {
                   let a = _step2.value;
 
                   console.log(JSON.stringify({
+                    url: a.url,
                     title: a.title,
                     top: a.top,
                     fontSize: a.fontSize,
@@ -219,11 +220,4 @@ function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, a
 const launchChrome = require('@serverless-chrome/lambda');
 const CDP = require('chrome-remote-interface');
 const url = require('url');
-
-function removeTags(txt) {
-  if (!txt) {
-    return '';
-  }
-  var rex = /(<([^>]+)>)/ig;
-  return txt.replace(rex, "").replace("\n", "").trim();
-}
+var h2p = require('html2plaintext');

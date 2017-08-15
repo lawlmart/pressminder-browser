@@ -1,16 +1,9 @@
 const launchChrome = require('@serverless-chrome/lambda')
 const CDP = require('chrome-remote-interface')
 const url = require('url')
+var h2p = require('html2plaintext')
 
 import { trigger } from './events'
-
-function removeTags(txt) {
-  if (!txt) {
-    return ''
-  }
-  var rex = /(<([^>]+)>)/ig;
-  return txt.replace(rex , "").replace("\n", "").trim();
-}
 
 export async function scanPage(data) {
   const chrome = await launchChrome({
@@ -112,7 +105,7 @@ export async function scanPage(data) {
               generatePreview: true
             })
             properties.headingEl = result.result.value
-            properties.title = removeTags(result.result.value)
+            properties.title = h2p(result.result.value)
             
             result = await Runtime.evaluate({
               expression: "getComputedStyle(" + headerExpression + ").fontSize",
@@ -143,6 +136,7 @@ export async function scanPage(data) {
             return a.top - b.top
           })) {
             console.log(JSON.stringify({
+              url: a.url,
               title: a.title,
               top: a.top,
               fontSize: a.fontSize,
