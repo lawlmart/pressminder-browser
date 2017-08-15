@@ -3,13 +3,15 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.trigger = exports.executeEvents = undefined;
+exports.runSourceFile = exports.trigger = exports.executeEvents = undefined;
 
 let executeEvents = exports.executeEvents = (() => {
   var _ref2 = _asyncToGenerator(function* (name, payloads) {
     let f;
     if (name == 'scan') {
       f = makeMulti(tasks.scanPage);
+    } else if (name == 'scan_all') {
+      f = runSourceFile;
     } else {
       console.log("Unrecognized event " + name);
       return;
@@ -37,6 +39,32 @@ let trigger = exports.trigger = (() => {
   };
 })();
 
+let readJsonFile = (() => {
+  var _ref4 = _asyncToGenerator(function* (file) {
+    return new Promise(function (resolve, reject) {
+      fs.readFile(file, 'utf8', function (err, data) {
+        if (err) throw err; // we'll not consider error handling for now
+        resolve(JSON.parse(data));
+      });
+    });
+  });
+
+  return function readJsonFile(_x6) {
+    return _ref4.apply(this, arguments);
+  };
+})();
+
+let runSourceFile = exports.runSourceFile = (() => {
+  var _ref5 = _asyncToGenerator(function* () {
+    const sources = yield readJsonFile(path.resolve(__dirname, '../sources.json'));
+    return yield executeEvents('scan', sources);
+  });
+
+  return function runSourceFile() {
+    return _ref5.apply(this, arguments);
+  };
+})();
+
 exports.parseEvents = parseEvents;
 
 var _kinesis = require('@heroku/kinesis');
@@ -52,6 +80,9 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+const fs = require('fs');
+const path = require('path');
 
 const sendToStream = (stream, type, payload) => {
   return new Promise((resolve, reject) => {

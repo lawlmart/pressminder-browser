@@ -2,7 +2,7 @@
 
 let test = (() => {
   var _ref = _asyncToGenerator(function* () {
-    yield (0, _events.trigger)('scan', { "url": "http://www.bbc.com/news", "articleSelector": ".gs-c-promo-body", "headerSelector": ".gs-c-promo-heading__title", "sectionSelector": 'div[role="region"]', "sectionNameAttribute": "aria-labelledby" });
+    yield (0, _events.trigger)('scan_all', {});
 
     //await trigger('scan', {"url": "http://www.theguardian.com", "articleSelector": ".fc-item__content", "headerSelector": ".fc-item__header", "sectionSelector": null, "sectionNameAttribute": null })
     //await trigger('scan', {"url": "http://www.cnn.com", "articleSelector": "article", "headerSelector": null, "sectionSelector": null, "sectionNameAttribute": null })

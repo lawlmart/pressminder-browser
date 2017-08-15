@@ -1,0 +1,29 @@
+[
+  {
+    "url": "http://www.bbc.com/news", 
+    "articleSelector": ".gs-c-promo-body", 
+    "headerSelector": ".gs-c-promo-heading__title", 
+    "sectionSelector": "div[role=\"region\"]", 
+    "sectionNameAttribute": "aria-labelledby"
+  },
+  {
+    "url": "http://www.cnn.com", 
+    "articleSelector": "article"
+  },
+  {
+    "url": "http://www.nytimes.com", 
+    "articleSelector": "article", 
+    "headerSelector": ".story-heading" 
+  },
+  {
+    "url": "http://www.washingtonpost.com", 
+    "articleSelector": ".headline", 
+    "sectionSelector": ".chain-wrapper", 
+    "sectionNameAttribute": "data-chain-name"
+  },
+  { 
+    "url": "http://www.theguardian.com", 
+    "articleSelector": ".fc-item__content", 
+    "headerSelector": ".fc-item__header"
+  }
+]

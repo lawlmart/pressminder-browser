@@ -1,5 +1,7 @@
 import kinesis from '@heroku/kinesis'
 import * as tasks from './tasks'
+const fs = require('fs');
+const path = require('path');
 
 const sendToStream = (stream, type, payload) => {
   return new Promise((resolve, reject) => {
@@ -73,6 +75,8 @@ export async function executeEvents(name, payloads) {
   let f
   if (name == 'scan') {
     f = makeMulti(tasks.scanPage)
+  } else if (name == 'scan_all') {
+    f = runSourceFile
   } else {
     console.log("Unrecognized event " + name)
     return
@@ -87,4 +91,18 @@ export async function trigger(name, data) {
     console.log("Executing event " + name + " immediately")
     return await executeEvents(name, [data]);
   }
+}
+
+async function readJsonFile(file) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(file, 'utf8', function (err, data) {
+      if (err) throw err; // we'll not consider error handling for now
+      resolve(JSON.parse(data))
+    });
+  })
+}
+
+export async function runSourceFile() {
+  const sources = await readJsonFile(path.resolve(__dirname, '../sources.json'))
+  return await executeEvents('scan', sources);
 }
