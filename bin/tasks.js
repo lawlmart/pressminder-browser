@@ -8,7 +8,7 @@ exports.scanPage = undefined;
 let scanPage = exports.scanPage = (() => {
   var _ref = _asyncToGenerator(function* (data) {
     const chrome = yield launchChrome({
-      flags: ['--no-sandbox', '--single-process', '--hide-scrollbars', '--disable-gpu', '--incognito', '--user-data-dir=/tmp/user-data', ' --data-path=/tmp/data-path', '--homedir=/tmp', '--disk-cache-dir=/tmp/cache-dir']
+      flags: ['--no-sandbox', '--single-process', '--hide-scrollbars', '--disable-gpu', '--incognito', '--user-data-dir=/tmp/user-data', ' --data-path=/tmp/data-path', '--homedir=/tmp', '--disk-cache-dir=/tmp/cache-dir', '--no-zygote', '--enable-logging', '--v=99']
     });
     const url = data.url;
     return new Promise(function (resolve, reject) {
