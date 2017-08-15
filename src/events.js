@@ -74,7 +74,7 @@ function makeMulti(f) {
 export async function executeEvents(name, payloads) {
   let f
   if (name == 'scan') {
-    f = makeMulti(tasks.scanPage)
+    f = tasks.scanPages
   } else if (name == 'scan_all') {
     f = runSourceFile
   } else {

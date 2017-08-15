@@ -5,11 +5,21 @@ var h2p = require('html2plaintext')
 
 import { trigger } from './events'
 
-export async function scanPage(data) {
+async function timeout(f, seconds) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      f()
+      .then(resolve)
+      .catch(reject)
+    }, seconds)
+  })
+}
+
+export async function scanPages(datas) {
   const chrome = await launchChrome({
     flags: ['--no-sandbox', '--single-process', '--hide-scrollbars', '--disable-gpu', '--incognito', '--user-data-dir=/tmp/user-data',  ' --data-path=/tmp/data-path' , '--homedir=/tmp' , '--disk-cache-dir=/tmp/cache-dir', '--no-zygote', '--enable-logging',  '--v=99']
   })
-  const url = data.url
+
   return new Promise((resolve, reject) => {
     CDP(async function(client) {
       const {Network, Page, Runtime, DOM, Emulation} = client;
@@ -20,8 +30,6 @@ export async function scanPage(data) {
       await Network.enable()
       await Page.enable()
       await DOM.enable()
-
-      await Page.navigate({url})
 
       // Set up viewport resolution, etc.
       const deviceMetrics = {
@@ -34,16 +42,21 @@ export async function scanPage(data) {
       await Emulation.setDeviceMetricsOverride(deviceMetrics);
       await Emulation.setVisibleSize({width: deviceMetrics.width, height: deviceMetrics.height});
       
-      //await Page.loadEventFired()
-      await Page.domContentEventFired()
-      setTimeout(async function() {
-        try {
+      for (let data of datas) {
+        await Page.navigate({url: data.url})
+        //await Page.loadEventFired()
+        await Page.domContentEventFired()
+        await timeout(async function() {
           const articlesExpression = "document.querySelectorAll('" + data.articleSelector + "')"
           const articles = []
-          const result = await Runtime.evaluate({
+          let result = await Runtime.evaluate({
             expression: articlesExpression,
             generatePreview: true
           })
+          if (!result.result.preview) {
+            console.log("No results found for " + articlesExpression + " " + result.result.preview)
+            return
+          }
           for (let i = 0; i < result.result.preview.properties.length; i++) {
             const articleExpression = articlesExpression + "[" + i.toString() + "]"
 
@@ -70,7 +83,7 @@ export async function scanPage(data) {
               continue
             }
             if (articleUrl.indexOf('http') === -1) {
-              articleUrl = url + articleUrl 
+              articleUrl = data.url + articleUrl 
             }
             articleUrl = articleUrl.split('#')[0]
             properties.url = articleUrl
@@ -125,9 +138,8 @@ export async function scanPage(data) {
           }
           */
 
-          client.close();
           await trigger('scan_complete', {
-            url,
+            url: data.url,
             placements: articles,
             screenshot: null
           })
@@ -143,12 +155,9 @@ export async function scanPage(data) {
               section: a.section
             }))
           }
-
-          resolve()
-        } catch (err) {
-          reject(err)
-        }
-      }, 300)
+        }, 300)
+      }
+      client.close();
     })
   })
 }

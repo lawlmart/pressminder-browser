@@ -9,7 +9,7 @@ let executeEvents = exports.executeEvents = (() => {
   var _ref2 = _asyncToGenerator(function* (name, payloads) {
     let f;
     if (name == 'scan') {
-      f = makeMulti(tasks.scanPage);
+      f = tasks.scanPages;
     } else if (name == 'scan_all') {
       f = runSourceFile;
     } else {
