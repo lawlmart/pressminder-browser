@@ -56,7 +56,7 @@ let readJsonFile = (() => {
 
 let runSourceFile = exports.runSourceFile = (() => {
   var _ref5 = _asyncToGenerator(function* () {
-    const sources = yield readJsonFile(path.resolve(__dirname, '../sources.json'));
+    const sources = yield readJsonFile(path.resolve(__dirname, 'sources.json'));
     return yield executeEvents('scan', sources);
   });
 

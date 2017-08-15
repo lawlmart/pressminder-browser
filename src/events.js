@@ -103,6 +103,6 @@ async function readJsonFile(file) {
 }
 
 export async function runSourceFile() {
-  const sources = await readJsonFile(path.resolve(__dirname, '../sources.json'))
+  const sources = await readJsonFile(path.resolve(__dirname, 'sources.json'))
   return await executeEvents('scan', sources);
 }

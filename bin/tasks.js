@@ -71,10 +71,6 @@ let scanPages = exports.scanPages = (() => {
                   expression: articlesExpression,
                   generatePreview: true
                 });
-                if (!result.result.preview) {
-                  console.log("No results found for " + articlesExpression + " " + result.result.preview);
-                  return;
-                }
                 for (let i = 0; i < result.result.preview.properties.length; i++) {
                   const articleExpression = articlesExpression + "[" + i.toString() + "]";
 
