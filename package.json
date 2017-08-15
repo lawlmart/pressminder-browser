@@ -20,6 +20,7 @@
     "update": "yarn run transpile && claudia update --profile lawlmart --aws-client-timeout 1000000"
   },
   "devDependencies": {
-    "babel-preset-env": "^1.6.0"
+    "babel-preset-env": "^1.6.0",
+    "chrome-launcher": "^0.5.0"
   }
 }
