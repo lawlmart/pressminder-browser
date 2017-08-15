@@ -7,7 +7,7 @@ import { trigger } from './events'
 
 export async function scanPage(data) {
   const chrome = await launchChrome({
-    flags: ['--no-sandbox', '--single-process', '--hide-scrollbars', '--disable-gpu', '--incognito', '--user-data-dir=/tmp/user-data',  ' --data-path=/tmp/data-path' , '--homedir=/tmp' , '--disk-cache-dir=/tmp/cache-dir']
+    flags: ['--no-sandbox', '--single-process', '--hide-scrollbars', '--disable-gpu', '--incognito', '--user-data-dir=/tmp/user-data',  ' --data-path=/tmp/data-path' , '--homedir=/tmp' , '--disk-cache-dir=/tmp/cache-dir', '--no-zygote']
   })
   const url = data.url
   return new Promise((resolve, reject) => {
