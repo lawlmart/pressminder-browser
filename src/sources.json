@@ -13,7 +13,9 @@
   {
     "url": "http://www.nytimes.com", 
     "articleSelector": "article", 
-    "headerSelector": ".story-heading" 
+    "headerSelector": ".story-heading",
+    "sectionSelector": "section",
+    "sectionNameAttribute": "id"
   },
   {
     "url": "http://www.washingtonpost.com", 
