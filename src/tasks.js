@@ -1,7 +1,7 @@
-const launchChrome = require('@serverless-chrome/lambda')
 const CDP = require('chrome-remote-interface')
 const url = require('url')
-var h2p = require('html2plaintext')
+const h2p = require('html2plaintext')
+const puppeteer = require('puppeteer');
 
 import { trigger } from './events'
 
@@ -16,144 +16,103 @@ async function timeout(f, seconds) {
 }
 
 export async function scanPages(datas) {
-  const chrome = await launchChrome({
-    flags: ['--no-sandbox', '--single-process', '--hide-scrollbars', '--disable-gpu', '--incognito', '--user-data-dir=/tmp/user-data',  ' --data-path=/tmp/data-path' , '--homedir=/tmp' , '--disk-cache-dir=/tmp/cache-dir', '--no-zygote', '--enable-logging',  '--v=99']
-  })
-
-  return new Promise((resolve, reject) => {
-    CDP(async function(client) {
-      const {Network, Page, Runtime, DOM, Emulation} = client;
-
-      const version = await CDP.Version()
-      console.log(version)
-
-      await Network.enable()
-      await Page.enable()
-      await DOM.enable()
-
-      // Set up viewport resolution, etc.
-      const deviceMetrics = {
-        width: 1280,
-        height: 720,
-        deviceScaleFactor: 0,
-        mobile: false,
-        fitWindow: false,
-      };
-      await Emulation.setDeviceMetricsOverride(deviceMetrics);
-      await Emulation.setVisibleSize({width: deviceMetrics.width, height: deviceMetrics.height});
-      
-      for (let data of datas) {
-        await Page.navigate({url: data.url})
-        //await Page.loadEventFired()
-        await Page.domContentEventFired()
-        await timeout(async function() {
-          const articlesExpression = "document.querySelectorAll('" + data.articleSelector + "')"
-          const articles = []
-          let result = await Runtime.evaluate({
-            expression: articlesExpression,
-            generatePreview: true
-          })
-          for (let i = 0; i < result.result.preview.properties.length; i++) {
-            const articleExpression = articlesExpression + "[" + i.toString() + "]"
-
-            const properties = {}
-            let result = await Runtime.evaluate({
-              expression: articleExpression + ".getBoundingClientRect()",
-              generatePreview: true
-            })
-            for (const prop of result.result.preview.properties) {
-              properties[prop.name] = parseInt(prop.value)
-            }
-            if (!properties.top) {
-              // it's not visible
-              continue
-            }
-            properties.height = properties.bottom - properties.top
-
-            result = await Runtime.evaluate({
-              expression: articleExpression + ".getElementsByTagName('a')[0].getAttribute('href')",
-              generatePreview: true
-            })
-            let articleUrl = result.result.value
-            if (!articleUrl) {
-              continue
-            }
-            if (articleUrl.indexOf('http') === -1) {
-              articleUrl = data.url + articleUrl 
-            }
-            articleUrl = articleUrl.split('#')[0]
-            properties.url = articleUrl
-
-            if (data.sectionSelector) {
-              const sectionExpression = articleExpression + ".closest('" + data.sectionSelector +  "')"
-              result = await Runtime.evaluate({
-                expression: sectionExpression,
-                generatePreview: true
-              })
-              properties.sectionEl = result.result.value
-  
-              result = await Runtime.evaluate({
-                expression: sectionExpression + ".getAttribute('" + data.sectionNameAttribute + "')",
-                generatePreview: true
-              })
-              properties.section = result.result.value
-            }
-            
-            result = await Runtime.evaluate({
-              expression: articleExpression + ".innerHTML",
-              generatePreview: true
-            })
-            properties.articleEl = result.result.value
-
-            let headerExpression = articleExpression
-            if (data.headerSelector) {
-              headerExpression = articleExpression + ".querySelectorAll('" + data.headerSelector + "')[0]"
-            }
-            result = await Runtime.evaluate({
-              expression: headerExpression + ".innerHTML",
-              generatePreview: true
-            })
-            properties.headingEl = result.result.value
-            properties.title = h2p(result.result.value)
-            
-            result = await Runtime.evaluate({
-              expression: "getComputedStyle(" + headerExpression + ").fontSize",
-              generatePreview: true
-            })
-            properties.fontSize = parseInt((result.result.value || "").replace("px", "").replace("em", "").replace("rem", ""))
-            properties.index = i
-            articles.push(properties)
-          } 
-          /*
-          let screenshotData = null
-          try {
-            result = await Page.captureScreenshot();
-            screenshotData = result.data
-          } catch (err) {
-            console.log("Unable to get screenshot: " + err.toString())
-          }
-          */
-
-          await trigger('scan_complete', {
-            url: data.url,
-            placements: articles,
-            screenshot: null
-          })
-
-          for (let a of articles.sort(function(a, b) {
-            return a.top - b.top
-          })) {
-            console.log(JSON.stringify({
-              url: a.url,
-              title: a.title,
-              top: a.top,
-              fontSize: a.fontSize,
-              section: a.section
-            }))
-          }
-        }, 300)
+  const browser = await puppeteer.launch();
+  for (const data of datas) {
+    const page = await browser.newPage();
+    await page.setRequestInterceptionEnabled(true);
+    page.on('request', interceptedRequest => {
+      let { url } = interceptedRequest
+      if (url.indexOf('js') !== -1) {
+        interceptedRequest.abort()
+        return
       }
-      client.close();
-    })
-  })
+      if (url.indexOf('png') !== -1) {
+        interceptedRequest.abort()
+        return
+      }
+      if (url.indexOf('jgeg') !== -1) {
+        interceptedRequest.abort()
+        return
+      }
+      if (url.indexOf('jpg') !== -1) {
+        interceptedRequest.abort()
+        return
+      }
+      if (url.indexOf('gif') !== -1) {
+        interceptedRequest.abort()
+        return
+      }
+      interceptedRequest.continue()
+    });
+    page.goto(data.url);
+    await timeout(async function() {
+      let articles = await page.evaluate((data) => {
+        let results = []
+        let index = 0
+        for (const el of document.querySelectorAll(data.articleSelector)) {
+          let rect = el.getBoundingClientRect()
+          if (!rect.top) {
+            continue
+          }
+          let properties = {
+            top: rect.top,
+            left: rect.left,
+            height: rect.bottom - rect.top,
+            width: rect.right - rect.left
+          }
+          const anchorEl = el.getElementsByTagName('a')[0]
+          let articleUrl = anchorEl.getAttribute('href')
+          if (articleUrl.indexOf('http') === -1) {
+            articleUrl = data.url + articleUrl 
+          }
+          articleUrl = articleUrl.split('#')[0]
+          properties.url = articleUrl
+
+          properties.articleEl = el.innerHTML
+
+          if (data.sectionSelector) {
+            const sectionEl = el.closest(data.sectionSelector)
+            properties.sectionEl = sectionEl
+            properties.section = sectionEl.getAttribute(data.sectionNameAttribute)
+          }
+
+          let headerEl = el
+          if (data.headerSelector) {
+            headerEl = el.querySelectorAll(data.headerSelector)[0]
+          }
+          properties.headingEl = headerEl.innerHTML
+          
+          let fontSizeString = getComputedStyle(headerEl).fontSize
+          properties.fontSize = parseInt((fontSizeString || "").replace("px", "").replace("em", "").replace("rem", ""))
+          properties.index = index
+          
+          results.push(properties)
+          index += 1
+        }
+        return results
+      }, data)
+      for (let properties of articles) {
+        properties.title = h2p(properties.headingEl)
+      }
+
+      await trigger('scan_complete', {
+        url: data.url,
+        placements: articles,
+        screenshot: null
+      })
+
+      for (let a of articles.sort(function(a, b) {
+        return a.top - b.top
+      })) {
+        console.log(JSON.stringify({
+          url: a.url,
+          title: a.title,
+          top: a.top,
+          fontSize: a.fontSize,
+          section: a.section
+        }))
+      }
+    }, 300)
+  }
+  browser.close();
 }

@@ -21,222 +21,193 @@ let timeout = (() => {
 
 let scanPages = exports.scanPages = (() => {
   var _ref2 = _asyncToGenerator(function* (datas) {
-    const chrome = yield launchChrome({
-      flags: ['--no-sandbox', '--single-process', '--hide-scrollbars', '--disable-gpu', '--incognito', '--user-data-dir=/tmp/user-data', ' --data-path=/tmp/data-path', '--homedir=/tmp', '--disk-cache-dir=/tmp/cache-dir', '--no-zygote', '--enable-logging', '--v=99']
-    });
+    const browser = yield puppeteer.launch();
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
 
-    return new Promise(function (resolve, reject) {
-      CDP((() => {
-        var _ref3 = _asyncToGenerator(function* (client) {
-          const Network = client.Network,
-                Page = client.Page,
-                Runtime = client.Runtime,
-                DOM = client.DOM,
-                Emulation = client.Emulation;
+    try {
+      for (var _iterator = datas[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        const data = _step.value;
 
+        console.log(data);
+        const page = yield browser.newPage();
+        yield page.setRequestInterceptionEnabled(true);
+        page.on('request', function (interceptedRequest) {
+          let url = interceptedRequest.url;
 
-          const version = yield CDP.Version();
-          console.log(version);
+          if (url.indexOf('js') !== -1) {
+            interceptedRequest.abort();
+            return;
+          }
+          if (url.indexOf('png') !== -1) {
+            interceptedRequest.abort();
+            return;
+          }
+          if (url.indexOf('jgeg') !== -1) {
+            interceptedRequest.abort();
+            return;
+          }
+          if (url.indexOf('jpg') !== -1) {
+            interceptedRequest.abort();
+            return;
+          }
+          if (url.indexOf('gif') !== -1) {
+            interceptedRequest.abort();
+            return;
+          }
+          interceptedRequest.continue();
+        });
+        page.goto(data.url);
+        yield timeout(_asyncToGenerator(function* () {
+          let articles = yield page.evaluate(function (data) {
+            let results = [];
+            let index = 0;
+            var _iteratorNormalCompletion2 = true;
+            var _didIteratorError2 = false;
+            var _iteratorError2 = undefined;
 
-          yield Network.enable();
-          yield Page.enable();
-          yield DOM.enable();
+            try {
+              for (var _iterator2 = document.querySelectorAll(data.articleSelector)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                const el = _step2.value;
 
-          // Set up viewport resolution, etc.
-          const deviceMetrics = {
-            width: 1280,
-            height: 720,
-            deviceScaleFactor: 0,
-            mobile: false,
-            fitWindow: false
-          };
-          yield Emulation.setDeviceMetricsOverride(deviceMetrics);
-          yield Emulation.setVisibleSize({ width: deviceMetrics.width, height: deviceMetrics.height });
+                let rect = el.getBoundingClientRect();
+                if (!rect.top) {
+                  continue;
+                }
+                let properties = {
+                  top: rect.top,
+                  left: rect.left,
+                  height: rect.bottom - rect.top,
+                  width: rect.right - rect.left
+                };
+                const anchorEl = el.getElementsByTagName('a')[0];
+                let articleUrl = anchorEl.getAttribute('href');
+                if (articleUrl.indexOf('http') === -1) {
+                  articleUrl = data.url + articleUrl;
+                }
+                articleUrl = articleUrl.split('#')[0];
+                properties.url = articleUrl;
 
-          var _iteratorNormalCompletion = true;
-          var _didIteratorError = false;
-          var _iteratorError = undefined;
+                properties.articleEl = el.innerHTML;
+
+                if (data.sectionSelector) {
+                  const sectionEl = el.closest(data.sectionSelector);
+                  properties.sectionEl = sectionEl;
+                  properties.section = sectionEl.getAttribute(data.sectionNameAttribute);
+                }
+
+                let headerEl = el;
+                if (data.headerSelector) {
+                  headerEl = el.querySelectorAll(data.headerSelector)[0];
+                }
+                properties.headingEl = headerEl.innerHTML;
+
+                let fontSizeString = getComputedStyle(headerEl).fontSize;
+                properties.fontSize = parseInt((fontSizeString || "").replace("px", "").replace("em", "").replace("rem", ""));
+                properties.index = index;
+
+                results.push(properties);
+                index += 1;
+              }
+            } catch (err) {
+              _didIteratorError2 = true;
+              _iteratorError2 = err;
+            } finally {
+              try {
+                if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                  _iterator2.return();
+                }
+              } finally {
+                if (_didIteratorError2) {
+                  throw _iteratorError2;
+                }
+              }
+            }
+
+            return results;
+          }, data);
+          var _iteratorNormalCompletion3 = true;
+          var _didIteratorError3 = false;
+          var _iteratorError3 = undefined;
 
           try {
-            for (var _iterator = datas[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-              let data = _step.value;
+            for (var _iterator3 = articles[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+              let properties = _step3.value;
 
-              yield Page.navigate({ url: data.url });
-              //await Page.loadEventFired()
-              yield Page.domContentEventFired();
-              yield timeout(_asyncToGenerator(function* () {
-                const articlesExpression = "document.querySelectorAll('" + data.articleSelector + "')";
-                const articles = [];
-                let result = yield Runtime.evaluate({
-                  expression: articlesExpression,
-                  generatePreview: true
-                });
-                for (let i = 0; i < result.result.preview.properties.length; i++) {
-                  const articleExpression = articlesExpression + "[" + i.toString() + "]";
-
-                  const properties = {};
-                  let result = yield Runtime.evaluate({
-                    expression: articleExpression + ".getBoundingClientRect()",
-                    generatePreview: true
-                  });
-                  var _iteratorNormalCompletion2 = true;
-                  var _didIteratorError2 = false;
-                  var _iteratorError2 = undefined;
-
-                  try {
-                    for (var _iterator2 = result.result.preview.properties[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-                      const prop = _step2.value;
-
-                      properties[prop.name] = parseInt(prop.value);
-                    }
-                  } catch (err) {
-                    _didIteratorError2 = true;
-                    _iteratorError2 = err;
-                  } finally {
-                    try {
-                      if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                        _iterator2.return();
-                      }
-                    } finally {
-                      if (_didIteratorError2) {
-                        throw _iteratorError2;
-                      }
-                    }
-                  }
-
-                  if (!properties.top) {
-                    // it's not visible
-                    continue;
-                  }
-                  properties.height = properties.bottom - properties.top;
-
-                  result = yield Runtime.evaluate({
-                    expression: articleExpression + ".getElementsByTagName('a')[0].getAttribute('href')",
-                    generatePreview: true
-                  });
-                  let articleUrl = result.result.value;
-                  if (!articleUrl) {
-                    continue;
-                  }
-                  if (articleUrl.indexOf('http') === -1) {
-                    articleUrl = data.url + articleUrl;
-                  }
-                  articleUrl = articleUrl.split('#')[0];
-                  properties.url = articleUrl;
-
-                  if (data.sectionSelector) {
-                    const sectionExpression = articleExpression + ".closest('" + data.sectionSelector + "')";
-                    result = yield Runtime.evaluate({
-                      expression: sectionExpression,
-                      generatePreview: true
-                    });
-                    properties.sectionEl = result.result.value;
-
-                    result = yield Runtime.evaluate({
-                      expression: sectionExpression + ".getAttribute('" + data.sectionNameAttribute + "')",
-                      generatePreview: true
-                    });
-                    properties.section = result.result.value;
-                  }
-
-                  result = yield Runtime.evaluate({
-                    expression: articleExpression + ".innerHTML",
-                    generatePreview: true
-                  });
-                  properties.articleEl = result.result.value;
-
-                  let headerExpression = articleExpression;
-                  if (data.headerSelector) {
-                    headerExpression = articleExpression + ".querySelectorAll('" + data.headerSelector + "')[0]";
-                  }
-                  result = yield Runtime.evaluate({
-                    expression: headerExpression + ".innerHTML",
-                    generatePreview: true
-                  });
-                  properties.headingEl = result.result.value;
-                  properties.title = h2p(result.result.value);
-
-                  result = yield Runtime.evaluate({
-                    expression: "getComputedStyle(" + headerExpression + ").fontSize",
-                    generatePreview: true
-                  });
-                  properties.fontSize = parseInt((result.result.value || "").replace("px", "").replace("em", "").replace("rem", ""));
-                  properties.index = i;
-                  articles.push(properties);
-                }
-                /*
-                let screenshotData = null
-                try {
-                  result = await Page.captureScreenshot();
-                  screenshotData = result.data
-                } catch (err) {
-                  console.log("Unable to get screenshot: " + err.toString())
-                }
-                */
-
-                yield (0, _events.trigger)('scan_complete', {
-                  url: data.url,
-                  placements: articles,
-                  screenshot: null
-                });
-
-                var _iteratorNormalCompletion3 = true;
-                var _didIteratorError3 = false;
-                var _iteratorError3 = undefined;
-
-                try {
-                  for (var _iterator3 = articles.sort(function (a, b) {
-                    return a.top - b.top;
-                  })[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-                    let a = _step3.value;
-
-                    console.log(JSON.stringify({
-                      url: a.url,
-                      title: a.title,
-                      top: a.top,
-                      fontSize: a.fontSize,
-                      section: a.section
-                    }));
-                  }
-                } catch (err) {
-                  _didIteratorError3 = true;
-                  _iteratorError3 = err;
-                } finally {
-                  try {
-                    if (!_iteratorNormalCompletion3 && _iterator3.return) {
-                      _iterator3.return();
-                    }
-                  } finally {
-                    if (_didIteratorError3) {
-                      throw _iteratorError3;
-                    }
-                  }
-                }
-              }), 300);
+              properties.title = h2p(properties.headingEl);
             }
           } catch (err) {
-            _didIteratorError = true;
-            _iteratorError = err;
+            _didIteratorError3 = true;
+            _iteratorError3 = err;
           } finally {
             try {
-              if (!_iteratorNormalCompletion && _iterator.return) {
-                _iterator.return();
+              if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                _iterator3.return();
               }
             } finally {
-              if (_didIteratorError) {
-                throw _iteratorError;
+              if (_didIteratorError3) {
+                throw _iteratorError3;
               }
             }
           }
 
-          client.close();
-        });
+          yield (0, _events.trigger)('scan_complete', {
+            url: data.url,
+            placements: articles,
+            screenshot: null
+          });
 
-        return function (_x4) {
-          return _ref3.apply(this, arguments);
-        };
-      })());
-    });
+          var _iteratorNormalCompletion4 = true;
+          var _didIteratorError4 = false;
+          var _iteratorError4 = undefined;
+
+          try {
+            for (var _iterator4 = articles.sort(function (a, b) {
+              return a.top - b.top;
+            })[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+              let a = _step4.value;
+
+              console.log(JSON.stringify({
+                url: a.url,
+                title: a.title,
+                top: a.top,
+                fontSize: a.fontSize,
+                section: a.section
+              }));
+            }
+          } catch (err) {
+            _didIteratorError4 = true;
+            _iteratorError4 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                _iterator4.return();
+              }
+            } finally {
+              if (_didIteratorError4) {
+                throw _iteratorError4;
+              }
+            }
+          }
+        }), 300);
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator.return) {
+          _iterator.return();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
+
+    browser.close();
   });
 
   return function scanPages(_x3) {
@@ -248,7 +219,7 @@ var _events = require('./events');
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
-const launchChrome = require('@serverless-chrome/lambda');
 const CDP = require('chrome-remote-interface');
 const url = require('url');
-var h2p = require('html2plaintext');
+const h2p = require('html2plaintext');
+const puppeteer = require('puppeteer');
