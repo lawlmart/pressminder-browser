@@ -5,8 +5,36 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.scanPages = undefined;
 
+let upload = (() => {
+  var _ref = _asyncToGenerator(function* (file) {
+    return new Promise(function (resolve, reject) {
+      // call S3 to retrieve upload file to specified bucket
+      var uploadParams = { Bucket: 'pressminder', Key: '', Body: '' };
+      var fileStream = fs.createReadStream(file);
+      fileStream.on('error', function (err) {
+        reject(err);
+      });
+      uploadParams.Body = fileStream;
+      uploadParams.Key = path.basename(file);
+
+      // call S3 to retrieve upload file to specified bucket
+      s3.upload(uploadParams, function (err, data) {
+        if (err) {
+          reject(err);
+        }if (data) {
+          resolve();
+        }
+      });
+    });
+  });
+
+  return function upload(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
 let timeout = (() => {
-  var _ref = _asyncToGenerator(function* (f, seconds) {
+  var _ref2 = _asyncToGenerator(function* (f, seconds) {
     return new Promise(function (resolve, reject) {
       setTimeout(function () {
         f().then(resolve).catch(reject);
@@ -14,13 +42,13 @@ let timeout = (() => {
     });
   });
 
-  return function timeout(_x, _x2) {
-    return _ref.apply(this, arguments);
+  return function timeout(_x2, _x3) {
+    return _ref2.apply(this, arguments);
   };
 })();
 
 let scanPages = exports.scanPages = (() => {
-  var _ref2 = _asyncToGenerator(function* (datas) {
+  var _ref3 = _asyncToGenerator(function* (datas) {
     console.log("Scanning pages " + JSON.stringify(datas));
     const browser = yield puppeteer.launch();
     var _iteratorNormalCompletion = true;
@@ -36,30 +64,23 @@ let scanPages = exports.scanPages = (() => {
         page.on('request', function (interceptedRequest) {
           let url = interceptedRequest.url;
 
-          if (url.indexOf('js') !== -1) {
-            interceptedRequest.abort();
-            return;
-          }
-          if (url.indexOf('png') !== -1) {
-            interceptedRequest.abort();
-            return;
-          }
-          if (url.indexOf('jgeg') !== -1) {
-            interceptedRequest.abort();
-            return;
-          }
-          if (url.indexOf('jpg') !== -1) {
-            interceptedRequest.abort();
-            return;
-          }
-          if (url.indexOf('gif') !== -1) {
+          if (!data.allowJavascript && url.indexOf('js') !== -1) {
             interceptedRequest.abort();
             return;
           }
           interceptedRequest.continue();
         });
+        yield page.setViewport({
+          height: 800,
+          width: 1280
+        });
         yield page.goto(data.url);
         yield timeout(_asyncToGenerator(function* () {
+          const timestamp = Math.round(Date.now() / 1000);
+          const screenshotName = "screenshots/" + data.name + "-" + timestamp.toString() + ".png";
+          yield page.screenshot({ path: screenshotName });
+          yield upload(screenshotName);
+
           let articles = yield page.evaluate(function (data) {
             let results = [];
             let index = 0;
@@ -194,7 +215,7 @@ let scanPages = exports.scanPages = (() => {
               }
             }
           }
-        }), 300);
+        }), 3000);
       }
     } catch (err) {
       _didIteratorError = true;
@@ -214,8 +235,8 @@ let scanPages = exports.scanPages = (() => {
     browser.close();
   });
 
-  return function scanPages(_x3) {
-    return _ref2.apply(this, arguments);
+  return function scanPages(_x4) {
+    return _ref3.apply(this, arguments);
   };
 })();
 
@@ -226,4 +247,9 @@ function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, a
 const CDP = require('chrome-remote-interface');
 const url = require('url');
 const h2p = require('html2plaintext');
+const AWS = require('aws-sdk');
 const puppeteer = require('puppeteer');
+const fs = require('fs');
+const path = require('path');
+
+const s3 = new AWS.S3();

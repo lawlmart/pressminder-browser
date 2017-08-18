@@ -9,6 +9,7 @@
   ],
   "dependencies": {
     "@heroku/kinesis": "^2.0.2",
+    "aws-sdk": "^2.100.0",
     "chrome-remote-interface": "^0.24.3",
     "html2plaintext": "^1.1.1",
     "puppeteer": "^0.9.0"

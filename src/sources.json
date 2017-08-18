@@ -1,5 +1,6 @@
 [
   {
+    "name": "bbc",
     "url": "http://www.bbc.com/news", 
     "articleSelector": ".gs-c-promo-body", 
     "headerSelector": ".gs-c-promo-heading__title", 
@@ -7,10 +8,13 @@
     "sectionNameAttribute": "aria-labelledby"
   },
   {
+    "name": "cnn",
     "url": "http://www.cnn.com", 
-    "articleSelector": "article"
+    "articleSelector": "article",
+    "allowJavascript": "true"
   },
   {
+    "name": "nyt",
     "url": "http://www.nytimes.com", 
     "articleSelector": "article", 
     "headerSelector": ".story-heading",
@@ -18,12 +22,14 @@
     "sectionNameAttribute": "id"
   },
   {
+    "name": "wpo",
     "url": "http://www.washingtonpost.com", 
     "articleSelector": ".headline", 
     "sectionSelector": ".chain-wrapper", 
     "sectionNameAttribute": "data-chain-name"
   },
   { 
+    "name": "guardian",
     "url": "http://www.theguardian.com", 
     "articleSelector": ".fc-item__content", 
     "headerSelector": ".fc-item__header"

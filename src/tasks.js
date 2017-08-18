@@ -1,9 +1,37 @@
 const CDP = require('chrome-remote-interface')
 const url = require('url')
 const h2p = require('html2plaintext')
-const puppeteer = require('puppeteer');
+const AWS = require('aws-sdk');
+const puppeteer = require('puppeteer')
+const fs = require('fs')
+const path = require('path');
 
 import { trigger } from './events'
+
+const s3 = new AWS.S3();
+
+async function upload(file) {
+  return new Promise((resolve, reject) => {
+    // call S3 to retrieve upload file to specified bucket
+    var uploadParams = {Bucket: 'pressminder', Key: '', Body: '', ACL: 'public-read'};
+    var fileStream = fs.createReadStream(file);
+    fileStream.on('error', function(err) {
+      reject(err)
+    });
+    uploadParams.Body = fileStream;
+    uploadParams.Key = path.basename(file);
+
+    // call S3 to retrieve upload file to specified bucket
+    s3.upload (uploadParams, function (err, data) {
+      if (err) {
+        reject(err)
+      } if (data) {
+        resolve()
+        console.log("Saved " + file)
+      }
+    });
+  })
+}
 
 async function timeout(f, seconds) {
   return new Promise((resolve, reject) => {
@@ -23,30 +51,23 @@ export async function scanPages(datas) {
     await page.setRequestInterceptionEnabled(true);
     page.on('request', interceptedRequest => {
       let { url } = interceptedRequest
-      if (url.indexOf('js') !== -1) {
-        interceptedRequest.abort()
-        return
-      }
-      if (url.indexOf('png') !== -1) {
-        interceptedRequest.abort()
-        return
-      }
-      if (url.indexOf('jgeg') !== -1) {
-        interceptedRequest.abort()
-        return
-      }
-      if (url.indexOf('jpg') !== -1) {
-        interceptedRequest.abort()
-        return
-      }
-      if (url.indexOf('gif') !== -1) {
+      if (!data.allowJavascript && url.indexOf('js') !== -1) {
         interceptedRequest.abort()
         return
       }
       interceptedRequest.continue()
     });
+    await page.setViewport({
+      height: 800,
+      width: 1280
+    })
     await page.goto(data.url);
     await timeout(async function() {
+      const timestamp = Math.round(Date.now() / 1000)
+      const screenshotName = "screenshots/" + data.name + "-" + timestamp.toString() + ".png"
+      await page.screenshot({path: screenshotName})
+      await upload(screenshotName)
+    
       let articles = await page.evaluate((data) => {
         let results = []
         let index = 0
@@ -117,7 +138,7 @@ export async function scanPages(datas) {
           section: a.section
         }))
       }
-    }, 300)
+    }, 3000)
   }
   browser.close();
 }
