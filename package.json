@@ -14,7 +14,7 @@
     "puppeteer": "^0.9.0"
   },
   "scripts": {
-    "test": "yarn run transpile && node bin/test.js",
+    "test": "yarn run transpile && node bin/run.js scan_all",
     "transpile": "babel src --copy-files --out-dir bin",
     "create": "yarn run transpile && claudia create --region us-east-1 --handler bin/index.handler --timeout 60 --profile lawlmart",
     "update": "yarn run transpile && claudia update --profile lawlmart --aws-client-timeout 1000000"

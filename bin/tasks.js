@@ -77,10 +77,10 @@ let scanPages = exports.scanPages = (() => {
                     continue;
                   }
                   let properties = {
-                    top: rect.top,
-                    left: rect.left,
-                    height: rect.bottom - rect.top,
-                    width: rect.right - rect.left
+                    top: Math.round(rect.top),
+                    left: Math.round(rect.left),
+                    height: Math.round(rect.bottom - rect.top),
+                    width: Math.round(rect.right - rect.left)
                   };
                   const anchorEl = el.getElementsByTagName('a')[0];
                   let articleUrl = anchorEl.getAttribute('href');
