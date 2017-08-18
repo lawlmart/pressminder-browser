@@ -124,7 +124,7 @@ export async function scanPages(datas) {
       await trigger('scan_complete', {
         url: data.url,
         placements: articles,
-        screenshot: null
+        screenshot: screenshotName
       })
 
       for (let a of articles.sort(function(a, b) {

@@ -9,7 +9,7 @@ let upload = (() => {
   var _ref = _asyncToGenerator(function* (file) {
     return new Promise(function (resolve, reject) {
       // call S3 to retrieve upload file to specified bucket
-      var uploadParams = { Bucket: 'pressminder', Key: '', Body: '' };
+      var uploadParams = { Bucket: 'pressminder', Key: '', Body: '', ACL: 'public-read' };
       var fileStream = fs.createReadStream(file);
       fileStream.on('error', function (err) {
         reject(err);
@@ -23,6 +23,7 @@ let upload = (() => {
           reject(err);
         }if (data) {
           resolve();
+          console.log("Saved " + file);
         }
       });
     });
@@ -180,7 +181,7 @@ let scanPages = exports.scanPages = (() => {
           yield (0, _events.trigger)('scan_complete', {
             url: data.url,
             placements: articles,
-            screenshot: null
+            screenshot: screenshotName
           });
 
           var _iteratorNormalCompletion4 = true;
