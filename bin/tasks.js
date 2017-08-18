@@ -78,7 +78,7 @@ let scanPages = exports.scanPages = (() => {
         yield page.goto(data.url);
         yield timeout(_asyncToGenerator(function* () {
           const timestamp = Math.round(Date.now() / 1000);
-          const screenshotName = "screenshots/" + data.name + "-" + timestamp.toString() + ".png";
+          const screenshotName = path.join(__dirname, "../screenshots/" + data.name + "-" + timestamp.toString() + ".png");
           yield page.screenshot({ path: screenshotName });
           yield upload(screenshotName);
 

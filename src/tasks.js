@@ -22,7 +22,7 @@ async function upload(file) {
     uploadParams.Key = path.basename(file);
 
     // call S3 to retrieve upload file to specified bucket
-    s3.upload (uploadParams, function (err, data) {
+    s3.upload(uploadParams, function (err, data) {
       if (err) {
         reject(err)
       } if (data) {
@@ -64,7 +64,7 @@ export async function scanPages(datas) {
     await page.goto(data.url);
     await timeout(async function() {
       const timestamp = Math.round(Date.now() / 1000)
-      const screenshotName = "screenshots/" + data.name + "-" + timestamp.toString() + ".png"
+      const screenshotName = path.join(__dirname, "../screenshots/" + data.name + "-" + timestamp.toString() + ".png")
       await page.screenshot({path: screenshotName})
       await upload(screenshotName)
     
