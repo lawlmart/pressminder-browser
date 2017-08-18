@@ -16,6 +16,7 @@ async function timeout(f, seconds) {
 }
 
 export async function scanPages(datas) {
+  console.log("Scanning pages " + JSON.stringify(datas))
   const browser = await puppeteer.launch();
   for (const data of datas) {
     const page = await browser.newPage();
@@ -44,50 +45,54 @@ export async function scanPages(datas) {
       }
       interceptedRequest.continue()
     });
-    page.goto(data.url);
+    await page.goto(data.url);
     await timeout(async function() {
       let articles = await page.evaluate((data) => {
         let results = []
         let index = 0
         for (const el of document.querySelectorAll(data.articleSelector)) {
-          let rect = el.getBoundingClientRect()
-          if (!rect.top) {
-            continue
-          }
-          let properties = {
-            top: rect.top,
-            left: rect.left,
-            height: rect.bottom - rect.top,
-            width: rect.right - rect.left
-          }
-          const anchorEl = el.getElementsByTagName('a')[0]
-          let articleUrl = anchorEl.getAttribute('href')
-          if (articleUrl.indexOf('http') === -1) {
-            articleUrl = data.url + articleUrl 
-          }
-          articleUrl = articleUrl.split('#')[0]
-          properties.url = articleUrl
+          try {
+            let rect = el.getBoundingClientRect()
+            if (!rect.top) {
+              continue
+            }
+            let properties = {
+              top: rect.top,
+              left: rect.left,
+              height: rect.bottom - rect.top,
+              width: rect.right - rect.left
+            }
+            const anchorEl = el.getElementsByTagName('a')[0]
+            let articleUrl = anchorEl.getAttribute('href')
+            if (articleUrl.indexOf('http') === -1) {
+              articleUrl = data.url + articleUrl 
+            }
+            articleUrl = articleUrl.split('#')[0]
+            properties.url = articleUrl
 
-          properties.articleEl = el.innerHTML
+            properties.articleEl = el.innerHTML
 
-          if (data.sectionSelector) {
-            const sectionEl = el.closest(data.sectionSelector)
-            properties.sectionEl = sectionEl
-            properties.section = sectionEl.getAttribute(data.sectionNameAttribute)
-          }
+            if (data.sectionSelector) {
+              const sectionEl = el.closest(data.sectionSelector)
+              properties.sectionEl = sectionEl
+              properties.section = sectionEl.getAttribute(data.sectionNameAttribute)
+            }
 
-          let headerEl = el
-          if (data.headerSelector) {
-            headerEl = el.querySelectorAll(data.headerSelector)[0]
+            let headerEl = el
+            if (data.headerSelector) {
+              headerEl = el.querySelectorAll(data.headerSelector)[0]
+            }
+            properties.headingEl = headerEl.innerHTML
+            
+            let fontSizeString = getComputedStyle(headerEl).fontSize
+            properties.fontSize = parseInt((fontSizeString || "").replace("px", "").replace("em", "").replace("rem", ""))
+            properties.index = index
+            
+            results.push(properties)
+            index += 1
+          } catch (err) {
+            console.log(err)
           }
-          properties.headingEl = headerEl.innerHTML
-          
-          let fontSizeString = getComputedStyle(headerEl).fontSize
-          properties.fontSize = parseInt((fontSizeString || "").replace("px", "").replace("em", "").replace("rem", ""))
-          properties.index = index
-          
-          results.push(properties)
-          index += 1
         }
         return results
       }, data)

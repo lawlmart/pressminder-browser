@@ -21,6 +21,7 @@ let timeout = (() => {
 
 let scanPages = exports.scanPages = (() => {
   var _ref2 = _asyncToGenerator(function* (datas) {
+    console.log("Scanning pages " + JSON.stringify(datas));
     const browser = yield puppeteer.launch();
     var _iteratorNormalCompletion = true;
     var _didIteratorError = false;
@@ -30,7 +31,6 @@ let scanPages = exports.scanPages = (() => {
       for (var _iterator = datas[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
         const data = _step.value;
 
-        console.log(data);
         const page = yield browser.newPage();
         yield page.setRequestInterceptionEnabled(true);
         page.on('request', function (interceptedRequest) {
@@ -58,7 +58,7 @@ let scanPages = exports.scanPages = (() => {
           }
           interceptedRequest.continue();
         });
-        page.goto(data.url);
+        yield page.goto(data.url);
         yield timeout(_asyncToGenerator(function* () {
           let articles = yield page.evaluate(function (data) {
             let results = [];
@@ -71,44 +71,48 @@ let scanPages = exports.scanPages = (() => {
               for (var _iterator2 = document.querySelectorAll(data.articleSelector)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
                 const el = _step2.value;
 
-                let rect = el.getBoundingClientRect();
-                if (!rect.top) {
-                  continue;
+                try {
+                  let rect = el.getBoundingClientRect();
+                  if (!rect.top) {
+                    continue;
+                  }
+                  let properties = {
+                    top: rect.top,
+                    left: rect.left,
+                    height: rect.bottom - rect.top,
+                    width: rect.right - rect.left
+                  };
+                  const anchorEl = el.getElementsByTagName('a')[0];
+                  let articleUrl = anchorEl.getAttribute('href');
+                  if (articleUrl.indexOf('http') === -1) {
+                    articleUrl = data.url + articleUrl;
+                  }
+                  articleUrl = articleUrl.split('#')[0];
+                  properties.url = articleUrl;
+
+                  properties.articleEl = el.innerHTML;
+
+                  if (data.sectionSelector) {
+                    const sectionEl = el.closest(data.sectionSelector);
+                    properties.sectionEl = sectionEl;
+                    properties.section = sectionEl.getAttribute(data.sectionNameAttribute);
+                  }
+
+                  let headerEl = el;
+                  if (data.headerSelector) {
+                    headerEl = el.querySelectorAll(data.headerSelector)[0];
+                  }
+                  properties.headingEl = headerEl.innerHTML;
+
+                  let fontSizeString = getComputedStyle(headerEl).fontSize;
+                  properties.fontSize = parseInt((fontSizeString || "").replace("px", "").replace("em", "").replace("rem", ""));
+                  properties.index = index;
+
+                  results.push(properties);
+                  index += 1;
+                } catch (err) {
+                  console.log(err);
                 }
-                let properties = {
-                  top: rect.top,
-                  left: rect.left,
-                  height: rect.bottom - rect.top,
-                  width: rect.right - rect.left
-                };
-                const anchorEl = el.getElementsByTagName('a')[0];
-                let articleUrl = anchorEl.getAttribute('href');
-                if (articleUrl.indexOf('http') === -1) {
-                  articleUrl = data.url + articleUrl;
-                }
-                articleUrl = articleUrl.split('#')[0];
-                properties.url = articleUrl;
-
-                properties.articleEl = el.innerHTML;
-
-                if (data.sectionSelector) {
-                  const sectionEl = el.closest(data.sectionSelector);
-                  properties.sectionEl = sectionEl;
-                  properties.section = sectionEl.getAttribute(data.sectionNameAttribute);
-                }
-
-                let headerEl = el;
-                if (data.headerSelector) {
-                  headerEl = el.querySelectorAll(data.headerSelector)[0];
-                }
-                properties.headingEl = headerEl.innerHTML;
-
-                let fontSizeString = getComputedStyle(headerEl).fontSize;
-                properties.fontSize = parseInt((fontSizeString || "").replace("px", "").replace("em", "").replace("rem", ""));
-                properties.index = index;
-
-                results.push(properties);
-                index += 1;
               }
             } catch (err) {
               _didIteratorError2 = true;
