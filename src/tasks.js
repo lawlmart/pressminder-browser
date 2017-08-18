@@ -84,12 +84,10 @@ export async function scanPages(datas) {
               width: Math.round(rect.right - rect.left)
             }
             const anchorEl = el.getElementsByTagName('a')[0]
-            let articleUrl = anchorEl.getAttribute('href')
-            if (articleUrl.indexOf('http') === -1) {
-              articleUrl = data.url + articleUrl 
+            properties.url = anchorEl.getAttribute('href')
+            if (!properties.url) {
+              continue
             }
-            articleUrl = articleUrl.split('#')[0]
-            properties.url = articleUrl
 
             properties.articleEl = el.innerHTML
 
@@ -112,13 +110,20 @@ export async function scanPages(datas) {
             results.push(properties)
             index += 1
           } catch (err) {
-            console.log(err)
+            
           }
         }
         return results
       }, data)
+
       for (let properties of articles) {
         properties.title = h2p(properties.headingEl)
+        
+        if (properties.url.indexOf('http') === -1) {
+          const hostname = url.parse(data.url).hostname
+          properties.url = 'http://' + hostname + properties.url 
+        }
+        properties.url = properties.url.split('#')[0]
       }
 
       await trigger('scan_complete', {

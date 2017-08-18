@@ -105,12 +105,10 @@ let scanPages = exports.scanPages = (() => {
                     width: Math.round(rect.right - rect.left)
                   };
                   const anchorEl = el.getElementsByTagName('a')[0];
-                  let articleUrl = anchorEl.getAttribute('href');
-                  if (articleUrl.indexOf('http') === -1) {
-                    articleUrl = data.url + articleUrl;
+                  properties.url = anchorEl.getAttribute('href');
+                  if (!properties.url) {
+                    continue;
                   }
-                  articleUrl = articleUrl.split('#')[0];
-                  properties.url = articleUrl;
 
                   properties.articleEl = el.innerHTML;
 
@@ -132,9 +130,7 @@ let scanPages = exports.scanPages = (() => {
 
                   results.push(properties);
                   index += 1;
-                } catch (err) {
-                  console.log(err);
-                }
+                } catch (err) {}
               }
             } catch (err) {
               _didIteratorError2 = true;
@@ -153,6 +149,7 @@ let scanPages = exports.scanPages = (() => {
 
             return results;
           }, data);
+
           var _iteratorNormalCompletion3 = true;
           var _didIteratorError3 = false;
           var _iteratorError3 = undefined;
@@ -162,6 +159,12 @@ let scanPages = exports.scanPages = (() => {
               let properties = _step3.value;
 
               properties.title = h2p(properties.headingEl);
+
+              if (properties.url.indexOf('http') === -1) {
+                const hostname = url.parse(data.url).hostname;
+                properties.url = 'http://' + hostname + properties.url;
+              }
+              properties.url = properties.url.split('#')[0];
             }
           } catch (err) {
             _didIteratorError3 = true;
