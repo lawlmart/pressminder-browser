@@ -25,8 +25,8 @@ let executeEvents = exports.executeEvents = (() => {
 })();
 
 let trigger = exports.trigger = (() => {
-  var _ref3 = _asyncToGenerator(function* (name, data) {
-    if (process.env.NODE_ENV == 'production') {
+  var _ref3 = _asyncToGenerator(function* (name, data, now) {
+    if (process.env.NODE_ENV == 'production' && !now) {
       return yield sendToStream('pressminder', name, data);
     } else {
       console.log("Executing event " + name + " immediately");
@@ -34,7 +34,7 @@ let trigger = exports.trigger = (() => {
     }
   });
 
-  return function trigger(_x4, _x5) {
+  return function trigger(_x4, _x5, _x6) {
     return _ref3.apply(this, arguments);
   };
 })();
@@ -49,7 +49,7 @@ let readJsonFile = (() => {
     });
   });
 
-  return function readJsonFile(_x6) {
+  return function readJsonFile(_x7) {
     return _ref4.apply(this, arguments);
   };
 })();
