@@ -26,7 +26,7 @@ async function upload(file) {
       if (err) {
         reject(err)
       } if (data) {
-        resolve()
+        resolve(uploadParams.Key)
         console.log("Saved " + file)
       }
     });
@@ -69,9 +69,9 @@ export async function scanPages(datas) {
     await page.goto(data.url);
     await timeout(async function() {
       const timestamp = Math.round(Date.now() / 1000)
-      const screenshotName = path.join(__dirname, "../screenshots/" + data.name + "-" + timestamp.toString() + ".png")
-      await page.screenshot({path: screenshotName})
-      await upload(screenshotName)
+      const screenshotPathName = path.join(__dirname, "../screenshots/" + data.name + "-" + timestamp.toString() + ".png")
+      await page.screenshot({path: screenshotPathName})
+      const screenshot = await upload(screenshotPathName)
     
       let articles = await page.evaluate((data) => {
         let results = []
@@ -133,9 +133,9 @@ export async function scanPages(datas) {
       }
 
       await trigger('scan_complete', {
+        screenshot,
         url: data.url,
-        placements: articles,
-        screenshot: screenshotName
+        placements: articles
       })
       /*
       for (let a of articles.sort(function(a, b) {
