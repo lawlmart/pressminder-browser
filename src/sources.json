@@ -22,7 +22,7 @@
     "sectionNameAttribute": "id"
   },
   {
-    "name": "wpo",
+    "name": "wapo",
     "url": "http://www.washingtonpost.com", 
     "articleSelector": ".headline"
   },
