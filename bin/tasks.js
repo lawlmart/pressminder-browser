@@ -51,7 +51,9 @@ let timeout = (() => {
 let scanPages = exports.scanPages = (() => {
   var _ref3 = _asyncToGenerator(function* (datas) {
     console.log("Scanning pages " + JSON.stringify(datas));
-    const browser = yield puppeteer.launch();
+    const browser = yield puppeteer.launch({
+      ignoreHTTPSErrors: true
+    });
     var _iteratorNormalCompletion = true;
     var _didIteratorError = false;
     var _iteratorError = undefined;
@@ -71,9 +73,12 @@ let scanPages = exports.scanPages = (() => {
           }
           interceptedRequest.continue();
         });
+        if (data.platform.userAgent) {
+          yield page.setUserAgent(data.platform.userAgent);
+        }
         yield page.setViewport({
-          height: 800,
-          width: 1280
+          height: data.platform.height,
+          width: data.platform.width
         });
         yield page.goto(data.url);
         yield timeout(_asyncToGenerator(function* () {
@@ -99,6 +104,7 @@ let scanPages = exports.scanPages = (() => {
                     continue;
                   }
                   let properties = {
+                    platform: data.platform.name,
                     top: Math.round(rect.top),
                     left: Math.round(rect.left),
                     height: Math.round(rect.bottom - rect.top),
@@ -186,39 +192,19 @@ let scanPages = exports.scanPages = (() => {
             placements: articles,
             screenshot: screenshotName
           });
-
-          var _iteratorNormalCompletion4 = true;
-          var _didIteratorError4 = false;
-          var _iteratorError4 = undefined;
-
-          try {
-            for (var _iterator4 = articles.sort(function (a, b) {
-              return a.top - b.top;
-            })[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-              let a = _step4.value;
-
-              console.log(JSON.stringify({
-                url: a.url,
-                title: a.title,
-                top: a.top,
-                fontSize: a.fontSize,
-                section: a.section
-              }));
-            }
-          } catch (err) {
-            _didIteratorError4 = true;
-            _iteratorError4 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion4 && _iterator4.return) {
-                _iterator4.return();
-              }
-            } finally {
-              if (_didIteratorError4) {
-                throw _iteratorError4;
-              }
-            }
-          }
+          /*
+          for (let a of articles.sort(function(a, b) {
+            return a.top - b.top
+          })) {
+            console.log(JSON.stringify({
+              url: a.url,
+              title: a.title,
+              top: a.top,
+              fontSize: a.fontSize,
+              section: a.section
+            }))
+          }*/
+          console.log("Found " + articles.length + " on " + data.name);
         }), 3000);
       }
     } catch (err) {

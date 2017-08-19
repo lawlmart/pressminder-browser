@@ -27,6 +27,7 @@ let executeEvents = exports.executeEvents = (() => {
 let trigger = exports.trigger = (() => {
   var _ref3 = _asyncToGenerator(function* (name, data, now) {
     if (process.env.NODE_ENV == 'production' && !now) {
+      console.log("Adding event " + name + " to kinesis");
       return yield sendToStream('pressminder', name, data);
     } else {
       console.log("Executing event " + name + " immediately");

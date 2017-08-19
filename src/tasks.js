@@ -45,7 +45,9 @@ async function timeout(f, seconds) {
 
 export async function scanPages(datas) {
   console.log("Scanning pages " + JSON.stringify(datas))
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({
+    ignoreHTTPSErrors: true
+  });
   for (const data of datas) {
     const page = await browser.newPage();
     await page.setRequestInterceptionEnabled(true);
@@ -57,9 +59,12 @@ export async function scanPages(datas) {
       }
       interceptedRequest.continue()
     });
+    if (data.platform.userAgent) {
+      await page.setUserAgent(data.platform.userAgent)
+    }
     await page.setViewport({
-      height: 800,
-      width: 1280
+      height: data.platform.height,
+      width: data.platform.width
     })
     await page.goto(data.url);
     await timeout(async function() {
@@ -78,6 +83,7 @@ export async function scanPages(datas) {
               continue
             }
             let properties = {
+              platform: data.platform.name,
               top: Math.round(rect.top),
               left: Math.round(rect.left),
               height: Math.round(rect.bottom - rect.top),
@@ -131,7 +137,7 @@ export async function scanPages(datas) {
         placements: articles,
         screenshot: screenshotName
       })
-
+      /*
       for (let a of articles.sort(function(a, b) {
         return a.top - b.top
       })) {
@@ -142,7 +148,8 @@ export async function scanPages(datas) {
           fontSize: a.fontSize,
           section: a.section
         }))
-      }
+      }*/
+      console.log("Found " + articles.length + " articles on " + data.name)
     }, 3000)
   }
   browser.close();
