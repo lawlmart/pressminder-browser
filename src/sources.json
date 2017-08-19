@@ -36,6 +36,20 @@
     }
   },
   {
+    "name": "bbc-mobile",
+    "url": "http://www.bbc.com/news", 
+    "articleSelector": ".gs-c-promo-body", 
+    "headerSelector": ".gs-c-promo-heading__title", 
+    "sectionSelector": "div[role=\"region\"]", 
+    "sectionNameAttribute": "aria-labelledby",
+    "platform": {
+      "name": "mobile",
+      "height": 667,
+      "width": 375,
+      "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1"
+    }
+  },
+  {
     "name": "cnn",
     "url": "http://www.cnn.com", 
     "articleSelector": "article",
@@ -43,6 +57,19 @@
     "platform": {
       "height": 800,
       "width": 1280
+    }
+  },
+  {
+    "name": "cnn-mobile",
+    "url": "http://www.cnn.com", 
+    "articleSelector": "article",
+    "headerSelector": ".cd__headline",
+    "allowJavascript": "true",
+    "platform": {
+      "name": "mobile",
+      "height": 667,
+      "width": 375,
+      "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1"
     }
   },
   {
@@ -54,6 +81,18 @@
       "width": 1280
     }
   },
+  {
+    "name": "wapo-mobile",
+    "url": "http://www.washingtonpost.com", 
+    "articleSelector": "div[moat-id=\"homepage/story\"]",
+    "headerSelector": ".headline",
+    "platform": {
+      "name": "mobile",
+      "height": 667,
+      "width": 375,
+      "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1"
+    }
+  },
   { 
     "name": "guardian",
     "url": "http://www.theguardian.com", 
@@ -62,6 +101,18 @@
     "platform": {
       "height": 800,
       "width": 1280
+    }
+  },
+  { 
+    "name": "guardian-mobile",
+    "url": "http://www.theguardian.com", 
+    "articleSelector": ".fc-item__container", 
+    "headerSelector": ".fc-item__header",
+    "platform": {
+      "name": "mobile",
+      "height": 667,
+      "width": 375,
+      "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1"
     }
   }
 ]

@@ -49,3 +49,4 @@ jspm_packages
 bin*
 screenshots*
 bin/tasks.js
+launch.sh

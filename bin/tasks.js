@@ -204,7 +204,7 @@ let scanPages = exports.scanPages = (() => {
               section: a.section
             }))
           }*/
-          console.log("Found " + articles.length + " on " + data.name);
+          console.log("Found " + articles.length + " articles on " + data.name);
         }), 3000);
       }
     } catch (err) {
