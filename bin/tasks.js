@@ -22,7 +22,7 @@ let upload = (() => {
         if (err) {
           reject(err);
         }if (data) {
-          resolve();
+          resolve(uploadParams.Key);
           console.log("Saved " + file);
         }
       });
@@ -62,150 +62,154 @@ let scanPages = exports.scanPages = (() => {
       for (var _iterator = datas[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
         const data = _step.value;
 
-        const page = yield browser.newPage();
-        yield page.setRequestInterceptionEnabled(true);
-        page.on('request', function (interceptedRequest) {
-          let url = interceptedRequest.url;
+        try {
+          const page = yield browser.newPage();
+          yield page.setRequestInterceptionEnabled(true);
+          page.on('request', function (interceptedRequest) {
+            let url = interceptedRequest.url;
 
-          if (!data.allowJavascript && url.indexOf('js') !== -1) {
-            interceptedRequest.abort();
-            return;
+            if (!data.allowJavascript && url.indexOf('js') !== -1) {
+              interceptedRequest.abort();
+              return;
+            }
+            interceptedRequest.continue();
+          });
+          if (data.platform.userAgent) {
+            yield page.setUserAgent(data.platform.userAgent);
           }
-          interceptedRequest.continue();
-        });
-        if (data.platform.userAgent) {
-          yield page.setUserAgent(data.platform.userAgent);
-        }
-        yield page.setViewport({
-          height: data.platform.height,
-          width: data.platform.width
-        });
-        yield page.goto(data.url);
-        yield timeout(_asyncToGenerator(function* () {
-          const timestamp = Math.round(Date.now() / 1000);
-          const screenshotName = path.join(__dirname, "../screenshots/" + data.name + "-" + timestamp.toString() + ".png");
-          yield page.screenshot({ path: screenshotName });
-          yield upload(screenshotName);
+          yield page.setViewport({
+            height: data.platform.height,
+            width: data.platform.width
+          });
+          yield page.goto(data.url);
+          yield timeout(_asyncToGenerator(function* () {
+            const timestamp = Math.round(Date.now() / 1000);
+            const screenshotPathName = path.join(__dirname, "../screenshots/" + data.name + "-" + timestamp.toString() + ".png");
+            yield page.screenshot({ path: screenshotPathName });
+            const screenshot = yield upload(screenshotPathName);
 
-          let articles = yield page.evaluate(function (data) {
-            let results = [];
-            let index = 0;
-            var _iteratorNormalCompletion2 = true;
-            var _didIteratorError2 = false;
-            var _iteratorError2 = undefined;
+            let articles = yield page.evaluate(function (data) {
+              let results = [];
+              let index = 0;
+              var _iteratorNormalCompletion2 = true;
+              var _didIteratorError2 = false;
+              var _iteratorError2 = undefined;
+
+              try {
+                for (var _iterator2 = document.querySelectorAll(data.articleSelector)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                  const el = _step2.value;
+
+                  try {
+                    let rect = el.getBoundingClientRect();
+                    if (!rect.top) {
+                      continue;
+                    }
+                    let properties = {
+                      platform: data.platform.name,
+                      top: Math.round(rect.top),
+                      left: Math.round(rect.left),
+                      height: Math.round(rect.bottom - rect.top),
+                      width: Math.round(rect.right - rect.left)
+                    };
+                    const anchorEl = el.getElementsByTagName('a')[0];
+                    properties.url = anchorEl.getAttribute('href');
+                    if (!properties.url) {
+                      continue;
+                    }
+
+                    properties.articleEl = el.innerHTML;
+
+                    if (data.sectionSelector) {
+                      const sectionEl = el.closest(data.sectionSelector);
+                      properties.sectionEl = sectionEl;
+                      properties.section = sectionEl.getAttribute(data.sectionNameAttribute);
+                    }
+
+                    let headerEl = el;
+                    if (data.headerSelector) {
+                      headerEl = el.querySelectorAll(data.headerSelector)[0];
+                    }
+                    properties.headingEl = headerEl.innerHTML;
+
+                    let fontSizeString = getComputedStyle(headerEl).fontSize;
+                    properties.fontSize = parseInt((fontSizeString || "").replace("px", "").replace("em", "").replace("rem", ""));
+                    properties.index = index;
+
+                    results.push(properties);
+                    index += 1;
+                  } catch (err) {}
+                }
+              } catch (err) {
+                _didIteratorError2 = true;
+                _iteratorError2 = err;
+              } finally {
+                try {
+                  if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                    _iterator2.return();
+                  }
+                } finally {
+                  if (_didIteratorError2) {
+                    throw _iteratorError2;
+                  }
+                }
+              }
+
+              return results;
+            }, data);
+
+            var _iteratorNormalCompletion3 = true;
+            var _didIteratorError3 = false;
+            var _iteratorError3 = undefined;
 
             try {
-              for (var _iterator2 = document.querySelectorAll(data.articleSelector)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-                const el = _step2.value;
+              for (var _iterator3 = articles[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                let properties = _step3.value;
 
-                try {
-                  let rect = el.getBoundingClientRect();
-                  if (!rect.top) {
-                    continue;
-                  }
-                  let properties = {
-                    platform: data.platform.name,
-                    top: Math.round(rect.top),
-                    left: Math.round(rect.left),
-                    height: Math.round(rect.bottom - rect.top),
-                    width: Math.round(rect.right - rect.left)
-                  };
-                  const anchorEl = el.getElementsByTagName('a')[0];
-                  properties.url = anchorEl.getAttribute('href');
-                  if (!properties.url) {
-                    continue;
-                  }
+                properties.title = h2p(properties.headingEl);
 
-                  properties.articleEl = el.innerHTML;
-
-                  if (data.sectionSelector) {
-                    const sectionEl = el.closest(data.sectionSelector);
-                    properties.sectionEl = sectionEl;
-                    properties.section = sectionEl.getAttribute(data.sectionNameAttribute);
-                  }
-
-                  let headerEl = el;
-                  if (data.headerSelector) {
-                    headerEl = el.querySelectorAll(data.headerSelector)[0];
-                  }
-                  properties.headingEl = headerEl.innerHTML;
-
-                  let fontSizeString = getComputedStyle(headerEl).fontSize;
-                  properties.fontSize = parseInt((fontSizeString || "").replace("px", "").replace("em", "").replace("rem", ""));
-                  properties.index = index;
-
-                  results.push(properties);
-                  index += 1;
-                } catch (err) {}
+                if (properties.url.indexOf('http') === -1) {
+                  const hostname = url.parse(data.url).hostname;
+                  properties.url = 'http://' + hostname + properties.url;
+                }
+                properties.url = properties.url.split('#')[0];
               }
             } catch (err) {
-              _didIteratorError2 = true;
-              _iteratorError2 = err;
+              _didIteratorError3 = true;
+              _iteratorError3 = err;
             } finally {
               try {
-                if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                  _iterator2.return();
+                if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                  _iterator3.return();
                 }
               } finally {
-                if (_didIteratorError2) {
-                  throw _iteratorError2;
+                if (_didIteratorError3) {
+                  throw _iteratorError3;
                 }
               }
             }
 
-            return results;
-          }, data);
-
-          var _iteratorNormalCompletion3 = true;
-          var _didIteratorError3 = false;
-          var _iteratorError3 = undefined;
-
-          try {
-            for (var _iterator3 = articles[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-              let properties = _step3.value;
-
-              properties.title = h2p(properties.headingEl);
-
-              if (properties.url.indexOf('http') === -1) {
-                const hostname = url.parse(data.url).hostname;
-                properties.url = 'http://' + hostname + properties.url;
-              }
-              properties.url = properties.url.split('#')[0];
-            }
-          } catch (err) {
-            _didIteratorError3 = true;
-            _iteratorError3 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion3 && _iterator3.return) {
-                _iterator3.return();
-              }
-            } finally {
-              if (_didIteratorError3) {
-                throw _iteratorError3;
-              }
-            }
-          }
-
-          yield (0, _events.trigger)('scan_complete', {
-            url: data.url,
-            placements: articles,
-            screenshot: screenshotName
-          });
-          /*
-          for (let a of articles.sort(function(a, b) {
-            return a.top - b.top
-          })) {
-            console.log(JSON.stringify({
-              url: a.url,
-              title: a.title,
-              top: a.top,
-              fontSize: a.fontSize,
-              section: a.section
-            }))
-          }*/
-          console.log("Found " + articles.length + " articles on " + data.name);
-        }), 3000);
+            yield (0, _events.trigger)('scan_complete', {
+              screenshot,
+              url: data.url,
+              placements: articles
+            });
+            /*
+            for (let a of articles.sort(function(a, b) {
+              return a.top - b.top
+            })) {
+              console.log(JSON.stringify({
+                url: a.url,
+                title: a.title,
+                top: a.top,
+                fontSize: a.fontSize,
+                section: a.section
+              }))
+            }*/
+            console.log("Found " + articles.length + " articles on " + data.name);
+          }), 3000);
+        } catch (err) {
+          console.log("ERROR: " + err.toString());
+        }
       }
     } catch (err) {
       _didIteratorError = true;
