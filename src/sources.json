@@ -24,9 +24,7 @@
   {
     "name": "wpo",
     "url": "http://www.washingtonpost.com", 
-    "articleSelector": ".headline", 
-    "sectionSelector": ".chain-wrapper", 
-    "sectionNameAttribute": "data-chain-name"
+    "articleSelector": ".headline"
   },
   { 
     "name": "guardian",
