@@ -5,13 +5,25 @@
     "articleSelector": ".gs-c-promo-body", 
     "headerSelector": ".gs-c-promo-heading__title", 
     "sectionSelector": "div[role=\"region\"]", 
-    "sectionNameAttribute": "aria-labelledby"
+    "sectionNameAttribute": "aria-labelledby",
+    "platform": {
+      "name": null,
+      "height": 800,
+      "width": 1280,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36"
+    }
   },
   {
     "name": "cnn",
     "url": "http://www.cnn.com", 
     "articleSelector": "article",
-    "allowJavascript": "true"
+    "allowJavascript": "true",
+    "platform": {
+      "name": null,
+      "height": 800,
+      "width": 1280,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36"
+    }
   },
   {
     "name": "nyt",
@@ -19,17 +31,35 @@
     "articleSelector": "article", 
     "headerSelector": ".story-heading",
     "sectionSelector": "section",
-    "sectionNameAttribute": "id"
+    "sectionNameAttribute": "id",
+    "platform": {
+      "name": null,
+      "height": 800,
+      "width": 1280,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36"
+    }
   },
   {
     "name": "wapo",
     "url": "http://www.washingtonpost.com", 
-    "articleSelector": ".headline"
+    "articleSelector": ".headline",
+    "platform": {
+      "name": null,
+      "height": 800,
+      "width": 1280,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36"
+    }
   },
   { 
     "name": "guardian",
     "url": "http://www.theguardian.com", 
     "articleSelector": ".fc-item__content", 
-    "headerSelector": ".fc-item__header"
+    "headerSelector": ".fc-item__header",
+    "platform": {
+      "name": null,
+      "height": 800,
+      "width": 1280,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36"
+    }
   }
 ]
