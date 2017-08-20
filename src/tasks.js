@@ -84,7 +84,6 @@ export async function scanPages(datas) {
                 continue
               }
               let properties = {
-                platform: data.platform.name,
                 top: Math.round(rect.top),
                 left: Math.round(rect.left),
                 height: Math.round(rect.bottom - rect.top),
@@ -136,7 +135,8 @@ export async function scanPages(datas) {
         await trigger('scan_complete', {
           screenshot,
           url: data.url,
-          placements: articles
+          placements: articles,
+          platform: data.platform.name
         })
         /*
         for (let a of articles.sort(function(a, b) {
