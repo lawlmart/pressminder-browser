@@ -1,5 +1,6 @@
 [
   {
+    "publicationId": 1,
     "name": "nyt",
     "url": "http://www.nytimes.com", 
     "articleSelector": "article", 
@@ -12,6 +13,7 @@
     }
   },
   {
+    "publicationId": 1,
     "name": "nyt-mobile",
     "url": "http://www.nytimes.com", 
     "articleSelector": ".sfgAsset", 
@@ -24,6 +26,7 @@
     }
   },
   {
+    "publicationId": 2,
     "name": "bbc",
     "url": "http://www.bbc.com/news", 
     "articleSelector": ".gs-c-promo-body", 
@@ -36,6 +39,7 @@
     }
   },
   {
+    "publicationId": 2,
     "name": "bbc-mobile",
     "url": "http://www.bbc.com/news", 
     "articleSelector": ".gs-c-promo-body", 
@@ -50,6 +54,7 @@
     }
   },
   {
+    "publicationId": 3,
     "name": "cnn",
     "url": "http://www.cnn.com", 
     "articleSelector": "article",
@@ -60,6 +65,7 @@
     }
   },
   {
+    "publicationId": 3,
     "name": "cnn-mobile",
     "url": "http://www.cnn.com", 
     "articleSelector": "article",
@@ -73,6 +79,7 @@
     }
   },
   {
+    "publicationId": 4,
     "name": "wapo",
     "url": "http://www.washingtonpost.com", 
     "articleSelector": ".headline",
@@ -82,6 +89,7 @@
     }
   },
   {
+    "publicationId": 4,
     "name": "wapo-mobile",
     "url": "http://www.washingtonpost.com", 
     "articleSelector": "div[moat-id=\"homepage/story\"]",
@@ -94,6 +102,7 @@
     }
   },
   { 
+    "publicationId": 5,
     "name": "guardian",
     "url": "http://www.theguardian.com", 
     "articleSelector": ".fc-item__content", 
@@ -104,6 +113,7 @@
     }
   },
   { 
+    "publicationId": 5,
     "name": "guardian-mobile",
     "url": "http://www.theguardian.com", 
     "articleSelector": ".fc-item__container", 

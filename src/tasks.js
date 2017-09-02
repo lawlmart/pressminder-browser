@@ -137,7 +137,8 @@ export async function scanPages(datas) {
           url: data.url,
           placements: articles,
           platform: data.platform.name,
-          name: data.name
+          name: data.name,
+          publicationId: data.publicationId
         })
         /*
         for (let a of articles.sort(function(a, b) {
