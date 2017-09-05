@@ -19,6 +19,7 @@
     "url": "http://www.nytimes.com", 
     "articleSelector": ".sfgAsset", 
     "headerSelector": ".sfgAsset-hed",
+    "articleUrlRegex": ".*nytimes.com/20[0-9][0-9]/.*",
     "platform": {
       "name": "mobile",
       "height": 667,
