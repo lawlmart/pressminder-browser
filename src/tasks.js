@@ -94,6 +94,9 @@ export async function scanPages(datas) {
               if (!properties.url) {
                 continue
               }
+              if (data.articleRegex && !(new RegExp(data.articleRegex).test(properties.url))) {
+                continue
+              }
 
               properties.articleEl = el.innerHTML
 
@@ -153,7 +156,7 @@ export async function scanPages(datas) {
           }))
         }*/
         console.log("Found " + articles.length + " articles on " + data.name)
-      }, 3000)
+      }, 5000)
     } catch (err) {
       console.log("ERROR: " + err.toString())
     }

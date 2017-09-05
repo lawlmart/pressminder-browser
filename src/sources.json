@@ -7,6 +7,7 @@
     "headerSelector": ".story-heading",
     "sectionSelector": "section",
     "sectionNameAttribute": "id",
+    "articleUrlRegex": ".*nytimes.com/20[0-9][0-9]/.*",
     "platform": {
       "height": 800,
       "width": 1280
