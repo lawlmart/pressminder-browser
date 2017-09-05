@@ -16,10 +16,10 @@
   {
     "publicationId": 1,
     "name": "nyt-mobile",
-    "url": "http://www.nytimes.com", 
+    "url": "http://mobile.nytimes.com", 
     "articleSelector": ".sfgAsset", 
     "headerSelector": ".sfgAsset-hed",
-    "articleUrlRegex": ".*nytimes.com/20[0-9][0-9]/.*",
+    "articleUrlRegex": ".*mobile.nytimes.com/20[0-9][0-9]/.*",
     "platform": {
       "name": "mobile",
       "height": 667,
