@@ -94,7 +94,8 @@ export async function scanPages(datas) {
               if (!properties.url) {
                 continue
               }
-              if (data.articleRegex && !(new RegExp(data.articleRegex).test(properties.url))) {
+              if (data.articleUrlRegex && !(new RegExp(data.articleRegex).test(properties.url))) {
+                console.log("Skipping article: " + properties.url)
                 continue
               }
 
@@ -119,7 +120,7 @@ export async function scanPages(datas) {
               results.push(properties)
               index += 1
             } catch (err) {
-              
+              console.log("ERROR: " + err.toString())
             }
           }
           return results
