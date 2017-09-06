@@ -142,7 +142,8 @@ export async function scanPages(datas) {
           placements: articles,
           platform: data.platform.name,
           name: data.name,
-          publicationId: data.publicationId
+          publicationId: data.publicationId,
+          content: page.content()
         })
         /*
         for (let a of articles.sort(function(a, b) {
