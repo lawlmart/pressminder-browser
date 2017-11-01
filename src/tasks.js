@@ -120,7 +120,7 @@ export async function scanPages(datas) {
               results.push(properties)
               index += 1
             } catch (err) {
-              console.log("ERROR: " + err.toString())
+              console.log("ERROR: " + err.toString() + " " + err.stack)
             }
           }
           return results
@@ -145,22 +145,24 @@ export async function scanPages(datas) {
           publicationId: data.publicationId,
           content: page.content()
         })
-        /*
-        for (let a of articles.sort(function(a, b) {
-          return a.top - b.top
-        })) {
-          console.log(JSON.stringify({
-            url: a.url,
-            title: a.title,
-            top: a.top,
-            fontSize: a.fontSize,
-            section: a.section
-          }))
-        }*/
+        
+        if (process.env.NODE_ENV !== 'production') {
+          for (let a of articles.sort(function(a, b) {
+            return a.top - b.top
+          })) {
+            console.log(JSON.stringify({
+              url: a.url,
+              title: a.title,
+              top: a.top,
+              fontSize: a.fontSize,
+              section: a.section
+            }))
+          }
+        }
         console.log("Found " + articles.length + " articles on " + data.name)
       }, 5000)
     } catch (err) {
-      console.log("ERROR: " + err.toString())
+      console.log("ERROR: " + err.toString() + " " + err.stack)
     }
   }
   browser.close();
