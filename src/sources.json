@@ -108,8 +108,8 @@
     "publicationId": 5,
     "name": "guardian",
     "url": "http://www.theguardian.com", 
-    "articleSelector": ".fc-item__content", 
-    "headerSelector": ".fc-item__header",
+    "articleSelector": ".fc-item__content, .fc-sublink", 
+    "headerSelector": ".fc-item__header, .fc-sublink__title",
     "platform": {
       "height": 800,
       "width": 1280
@@ -119,8 +119,8 @@
     "publicationId": 5,
     "name": "guardian-mobile",
     "url": "http://www.theguardian.com", 
-    "articleSelector": ".fc-item__container", 
-    "headerSelector": ".fc-item__header",
+    "articleSelector": ".fc-item__container, .fc-sublink", 
+    "headerSelector": ".fc-item__header, .fc-sublink__title",
     "platform": {
       "name": "mobile",
       "height": 667,
