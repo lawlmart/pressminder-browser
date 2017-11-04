@@ -98,6 +98,10 @@ export async function scanPages(datas) {
                 console.log("Skipping article: " + properties.url)
                 continue
               }
+              
+              for (let s of el.getElementsByTagName("script")) {
+                s.parentNode.removeChild(s);
+              }
 
               properties.articleEl = el.innerHTML
 
