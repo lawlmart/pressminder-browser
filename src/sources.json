@@ -60,6 +60,7 @@
     "name": "cnn",
     "url": "http://www.cnn.com", 
     "articleSelector": "article",
+    "headerSelector": ".cd__headline-text",
     "allowJavascript": "true",
     "platform": {
       "height": 800,
@@ -71,7 +72,7 @@
     "name": "cnn-mobile",
     "url": "http://www.cnn.com", 
     "articleSelector": "article",
-    "headerSelector": ".cd__headline",
+    "headerSelector": ".cd__headline-text",
     "allowJavascript": "true",
     "platform": {
       "name": "mobile",
