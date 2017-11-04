@@ -10,7 +10,8 @@
     "articleUrlRegex": ".*nytimes.com/20[0-9][0-9]/.*",
     "platform": {
       "height": 800,
-      "width": 1280
+      "width": 1280,
+      "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Safari/537.36."
     }
   },
   {
@@ -37,7 +38,8 @@
     "sectionNameAttribute": "aria-labelledby",
     "platform": {
       "height": 800,
-      "width": 1280
+      "width": 1280,
+      "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Safari/537.36."
     }
   },
   {
@@ -64,7 +66,8 @@
     "allowJavascript": "true",
     "platform": {
       "height": 800,
-      "width": 1280
+      "width": 1280,
+      "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Safari/537.36."
     }
   },
   {
@@ -88,7 +91,8 @@
     "articleSelector": ".headline",
     "platform": {
       "height": 800,
-      "width": 1280
+      "width": 1280,
+      "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Safari/537.36."
     }
   },
   {
@@ -112,7 +116,8 @@
     "headerSelector": ".fc-item__header, .fc-sublink__title",
     "platform": {
       "height": 800,
-      "width": 1280
+      "width": 1280,
+      "userAgent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Safari/537.36."
     }
   },
   { 
